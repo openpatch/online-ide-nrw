@@ -1,8 +1,8 @@
 
-import { resolve } from 'path'
+import { resolve, join } from 'path'
 import { defineConfig } from 'vite'
 
-import { readFileSync } from 'fs';
+import { readFileSync, renameSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 const file = fileURLToPath(new URL('package.json', import.meta.url));
@@ -38,3 +38,5 @@ export default defineConfig({
     emptyOutDir: false
   }
 });
+
+renameSync(join("dist", "embedded.html"), join("dist", "index.html"))

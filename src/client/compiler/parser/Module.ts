@@ -1,21 +1,22 @@
 import { FileData, WorkspaceSettings } from "../../communication/Data.js";
 import { AccordionElement } from "../../main/gui/Accordion.js";
 import { MainBase } from "../../main/MainBase.js";
-import { ArrayListClass } from "../../runtimelibrary/collections/ArrayList.js";
-import { CollectionClass } from "../../runtimelibrary/collections/Collection.js";
-import { IterableClass } from "../../runtimelibrary/collections/Iterable.js";
-import { IteratorClass } from "../../runtimelibrary/collections/Iterator.js";
-import { ListClass } from "../../runtimelibrary/collections/List.js";
-import { ListIteratorImplClass } from "../../runtimelibrary/collections/ListIteratorImpl.js";
-import { StackClass } from "../../runtimelibrary/collections/Stack.js";
-import { VectorClass } from "../../runtimelibrary/collections/Vector.js";
-import { SetClass } from "../../runtimelibrary/collections/Set.js";
-import { SetIteratorImplClass } from "../../runtimelibrary/collections/SetIteratorImpl.js";
-import { HashSetClass } from "../../runtimelibrary/collections/HashSet.js";
-import { LinkedHashSetClass } from "../../runtimelibrary/collections/LinkedHashSet.js";
-import { QueueClass } from "../../runtimelibrary/collections/Queue.js";
-import { DequeClass } from "../../runtimelibrary/collections/Deque.js";
-import { LinkedListClass } from "../../runtimelibrary/collections/LinkedList.js";
+import {ListClass } from "../../runtimelibrary/nrw/List.js";
+// import { ArrayListClass } from "../../runtimelibrary/collections/ArrayList.js";
+// import { CollectionClass } from "../../runtimelibrary/collections/Collection.js";
+// import { IterableClass } from "../../runtimelibrary/collections/Iterable.js";
+// import { IteratorClass } from "../../runtimelibrary/collections/Iterator.js";
+// import { ListClass } from "../../runtimelibrary/collections/List.js";
+// import { ListIteratorImplClass } from "../../runtimelibrary/collections/ListIteratorImpl.js";
+// import { StackClass } from "../../runtimelibrary/collections/Stack.js";
+// import { VectorClass } from "../../runtimelibrary/collections/Vector.js";
+// import { SetClass } from "../../runtimelibrary/collections/Set.js";
+// import { SetIteratorImplClass } from "../../runtimelibrary/collections/SetIteratorImpl.js";
+// import { HashSetClass } from "../../runtimelibrary/collections/HashSet.js";
+// import { LinkedHashSetClass } from "../../runtimelibrary/collections/LinkedHashSet.js";
+// import { QueueClass } from "../../runtimelibrary/collections/Queue.js";
+// import { DequeClass } from "../../runtimelibrary/collections/Deque.js";
+// import { LinkedListClass } from "../../runtimelibrary/collections/LinkedList.js";
 import { ConsoleClass } from "../../runtimelibrary/Console.js";
 import { Actor as ActorClass } from "../../runtimelibrary/graphics/Actor.js";
 import { AlignmentClass } from "../../runtimelibrary/graphics/Alignment.js";
@@ -55,8 +56,8 @@ import { Attribute, Method, PrimitiveType, Type, Variable } from "../types/Types
 import { ASTNode, MethodDeclarationNode, TypeNode } from "./AST.js";
 import { Breakpoint, Program, Statement } from "./Program.js";
 import { SymbolTable } from "./SymbolTable.js";
-import { MapClass } from "../../runtimelibrary/collections/Map.js";
-import { HashMapClass } from "../../runtimelibrary/collections/HashMap.js";
+// import { MapClass } from "../../runtimelibrary/collections/Map.js";
+// import { HashMapClass } from "../../runtimelibrary/collections/HashMap.js";
 import { TriangleClass } from "../../runtimelibrary/graphics/Triangle.js";
 import { Main } from "../../main/Main.js";
 import { LocalDateTimeClass, DayOfWeekEnum, MonthEnum } from "../../runtimelibrary/graphics/LocalDateTime.js";
@@ -270,7 +271,7 @@ export class Module {
     }
 
     setupMonacoModel(){
-        
+
     }
 
     toExportedModule(): ExportedModule {
@@ -286,7 +287,7 @@ export class Module {
     getMethodDeclarationAtPosition(position: { lineNumber: number; column: number; }): MethodDeclarationNode {
 
         if(this.classDefinitionsAST == null) return null;
-        
+
         for(let cd of this.classDefinitionsAST){
             if(cd.type == TokenType.keywordClass || cd.type == TokenType.keywordEnum){
                 for(let methodAST of cd.methods){
@@ -298,9 +299,9 @@ export class Module {
                 }
             }
         }
-        
+
         return null;
-    
+
     }
 
 
@@ -455,7 +456,7 @@ export class Module {
         if (nearestStatement != null) {
             nearestStatement.breakpoint = breakpoint;
             // let pp = new ProgramPrinter();
-            // console.log("Attached Breakpoint line " + breakpoint.line + ", column " + 
+            // console.log("Attached Breakpoint line " + breakpoint.line + ", column " +
             //     breakpoint.column + " to statement " + pp.print([nearestStatement]));
         }
 
@@ -794,7 +795,7 @@ export class Module {
                 that.main.getInterpreter().start();
             });
 
-        } 
+        }
     }
 
 
@@ -812,9 +813,9 @@ export class BaseModule extends Module {
 
 
         this.typeStore.addType(voidPrimitiveType);
-        this.typeStore.addType(intPrimitiveType); 
-        this.typeStore.addType(longPrimitiveType); 
-        this.typeStore.addType(shortPrimitiveType); 
+        this.typeStore.addType(intPrimitiveType);
+        this.typeStore.addType(longPrimitiveType);
+        this.typeStore.addType(shortPrimitiveType);
         this.typeStore.addType(floatPrimitiveType);
         this.typeStore.addType(doublePrimitiveType);
         this.typeStore.addType(charPrimitiveType);
@@ -831,118 +832,121 @@ export class BaseModule extends Module {
         this.typeStore.addType(BooleanType);
 
 
-        this.typeStore.addType(new PositionClass(this));
+        //this.typeStore.addType(new PositionClass(this));
+
+        // NRW Classes
+        this.typeStore.addType(new ListClass(this));
 
         // Collections Framework
-        this.typeStore.addType(new IteratorClass(this));
-        this.typeStore.addType(new IterableClass(this));
-        this.typeStore.addType(new CollectionClass(this));
-        this.typeStore.addType(new ListClass(this));
-        this.typeStore.addType(new ArrayListClass(this));
-        this.typeStore.addType(new VectorClass(this));
-        this.typeStore.addType(new QueueClass(this));
-        this.typeStore.addType(new DequeClass(this));
-        this.typeStore.addType(new LinkedListClass(this));
-        this.typeStore.addType(new StackClass(this));
-        this.typeStore.addType(new ListIteratorImplClass(this));
-        this.typeStore.addType(new SetClass(this));
-        this.typeStore.addType(new HashSetClass(this));
-        this.typeStore.addType(new LinkedHashSetClass(this));
-        this.typeStore.addType(new SetIteratorImplClass(this));
-        this.typeStore.addType(new MapClass(this));
-        this.typeStore.addType(new HashMapClass(this));
+        // this.typeStore.addType(new IteratorClass(this));
+        // this.typeStore.addType(new IterableClass(this));
+        // this.typeStore.addType(new CollectionClass(this));
+        // this.typeStore.addType(new ListClass(this));
+        // this.typeStore.addType(new ArrayListClass(this));
+        // this.typeStore.addType(new VectorClass(this));
+        // this.typeStore.addType(new QueueClass(this));
+        // this.typeStore.addType(new DequeClass(this));
+        // this.typeStore.addType(new LinkedListClass(this));
+        // this.typeStore.addType(new StackClass(this));
+        // this.typeStore.addType(new ListIteratorImplClass(this));
+        // this.typeStore.addType(new SetClass(this));
+        // this.typeStore.addType(new HashSetClass(this));
+        // this.typeStore.addType(new LinkedHashSetClass(this));
+        // this.typeStore.addType(new SetIteratorImplClass(this));
+        // this.typeStore.addType(new MapClass(this));
+        // this.typeStore.addType(new HashMapClass(this));
 
-        this.typeStore.addType(new ConsoleClass(this));
+        // this.typeStore.addType(new ConsoleClass(this));
         this.typeStore.addType(new MathClass(this));
         this.typeStore.addType(new FilesClass(this));
         this.typeStore.addType(new RandomClass(this));
-        this.typeStore.addType(new Vector2Class(this));
-        this.typeStore.addType(new MathToolsClass(this));
-        this.typeStore.addType(new KeyClass(this));
-        this.typeStore.addType(new SoundClass(this));
+        // this.typeStore.addType(new Vector2Class(this));
+        // this.typeStore.addType(new MathToolsClass(this));
+        // this.typeStore.addType(new KeyClass(this));
+        // this.typeStore.addType(new SoundClass(this));
         this.typeStore.addType(new InputClass(this));
         this.typeStore.addType(new Runnable(this));
         this.typeStore.addType(new TimerClass(this));
-        this.typeStore.addType(new ColorClass(this));
-        this.typeStore.addType(new ActorClass(this));
-        this.typeStore.addType(new DirectionClass(this));
-        this.typeStore.addType(new ShapeClass(this));
-        this.typeStore.addType(new FilledShapeClass(this));
-        this.typeStore.addType(new RectangleClass(this));
-        this.typeStore.addType(new RoundedRectangleClass(this));
-        this.typeStore.addType(new CircleClass(this));
-        this.typeStore.addType(new SectorClass(this));
-        this.typeStore.addType(new ArcClass(this));
-        this.typeStore.addType(new EllipseClass(this));
-        this.typeStore.addType(new BitmapClass(this));
-        this.typeStore.addType(new AlignmentClass(this));
-        this.typeStore.addType(new TextClass(this));
-        this.typeStore.addType(new ScaleModeClass(this));
-        this.typeStore.addType(new SpriteLibraryClass(this));
-        this.typeStore.addType(new RepeatTypeClass(this));
-        this.typeStore.addType(new TileClass(this));
-        this.typeStore.addType(new SpriteClass(this));
-        this.typeStore.addType(new CollisionPairClass(this));
-        this.typeStore.addType(new GroupClass(this));
-        this.typeStore.addType(new PolygonClass(this));
-        this.typeStore.addType(new LineClass(this));
-        this.typeStore.addType(new TriangleClass(this));
-        this.typeStore.addType(new TurtleClass(this));
+        // this.typeStore.addType(new ColorClass(this));
+        // this.typeStore.addType(new ActorClass(this));
+        // this.typeStore.addType(new DirectionClass(this));
+        // this.typeStore.addType(new ShapeClass(this));
+        // this.typeStore.addType(new FilledShapeClass(this));
+        // this.typeStore.addType(new RectangleClass(this));
+        // this.typeStore.addType(new RoundedRectangleClass(this));
+        // this.typeStore.addType(new CircleClass(this));
+        // this.typeStore.addType(new SectorClass(this));
+        // this.typeStore.addType(new ArcClass(this));
+        // this.typeStore.addType(new EllipseClass(this));
+        // this.typeStore.addType(new BitmapClass(this));
+        // this.typeStore.addType(new AlignmentClass(this));
+        // this.typeStore.addType(new TextClass(this));
+        // this.typeStore.addType(new ScaleModeClass(this));
+        // this.typeStore.addType(new SpriteLibraryClass(this));
+        // this.typeStore.addType(new RepeatTypeClass(this));
+        // this.typeStore.addType(new TileClass(this));
+        // this.typeStore.addType(new SpriteClass(this));
+        // this.typeStore.addType(new CollisionPairClass(this));
+        // this.typeStore.addType(new GroupClass(this));
+        // this.typeStore.addType(new PolygonClass(this));
+        // this.typeStore.addType(new LineClass(this));
+        // this.typeStore.addType(new TriangleClass(this));
+        // this.typeStore.addType(new TurtleClass(this));
 
-        this.typeStore.addType(new JsonElementClass(this));
-        this.typeStore.addType(new JsonParserClass(this));
+        // this.typeStore.addType(new JsonElementClass(this));
+        // this.typeStore.addType(new JsonParserClass(this));
 
-        this.typeStore.addType(new HttpHeaderType(this));
-        this.typeStore.addType(new HttpRequestClass(this));
-        this.typeStore.addType(new HttpResponseClass(this));
-        this.typeStore.addType(new HttpClientClass(this));
-        this.typeStore.addType(new URLEncoderClass(this));
-       
-        
-        this.typeStore.addType(new ChangeListenerClass(this));
-        this.typeStore.addType(new GuiComponentClass(this));
-        this.typeStore.addType(new GuiTextComponentClass(this));
-        
-        this.typeStore.addType(new TextFieldClass(this));
-        this.typeStore.addType(new CheckBoxClass(this));
-        this.typeStore.addType(new RadioButtonClass(this));
-        this.typeStore.addType(new ButtonClass(this));
+        // this.typeStore.addType(new HttpHeaderType(this));
+        // this.typeStore.addType(new HttpRequestClass(this));
+        // this.typeStore.addType(new HttpResponseClass(this));
+        // this.typeStore.addType(new HttpClientClass(this));
+        // this.typeStore.addType(new URLEncoderClass(this));
 
-        this.typeStore.addType(new JavaKaraWorldClass(this));
-        this.typeStore.addType(new KaraClass(this));
-        this.typeStore.addType(new JavaHamsterWorldClass(this));
-        this.typeStore.addType(new HamsterClass(this));
 
-        this.typeStore.addType(new MouseListenerInterface(this));
-        this.typeStore.addType(new MouseAdapterClass(this));
-        this.typeStore.addType(new GamepadClass(this));
-        this.typeStore.addType(new WorldClass(this));
-        this.typeStore.addType(new ProcessingClass(this));
+        // this.typeStore.addType(new ChangeListenerClass(this));
+        // this.typeStore.addType(new GuiComponentClass(this));
+        // this.typeStore.addType(new GuiTextComponentClass(this));
 
-        (<ActorClass>this.typeStore.getType("Actor")).registerWorldType();
+        // this.typeStore.addType(new TextFieldClass(this));
+        // this.typeStore.addType(new CheckBoxClass(this));
+        // this.typeStore.addType(new RadioButtonClass(this));
+        // this.typeStore.addType(new ButtonClass(this));
+
+        // this.typeStore.addType(new JavaKaraWorldClass(this));
+        // this.typeStore.addType(new KaraClass(this));
+        // this.typeStore.addType(new JavaHamsterWorldClass(this));
+        // this.typeStore.addType(new HamsterClass(this));
+
+        // this.typeStore.addType(new MouseListenerInterface(this));
+        // this.typeStore.addType(new MouseAdapterClass(this));
+        // this.typeStore.addType(new GamepadClass(this));
+        // this.typeStore.addType(new WorldClass(this));
+        // this.typeStore.addType(new ProcessingClass(this));
+
+        // (<ActorClass>this.typeStore.getType("Actor")).registerWorldType();
 
 
         this.typeStore.addType(new PrintStreamClass(this));
-        this.typeStore.addType(new KeyListener(this));
+        // this.typeStore.addType(new KeyListener(this));
         this.typeStore.addType(new SystemClass(this));
-        this.typeStore.addType(new SystemToolsClass(this));
+        // this.typeStore.addType(new SystemToolsClass(this));
         this.typeStore.addType(new DayOfWeekEnum(this));
         this.typeStore.addType(new MonthEnum(this));
         this.typeStore.addType(new LocalDateTimeClass(this));
-    
-        this.typeStore.addType(new WebSocketClientClass(this));
-        this.typeStore.addType(new WebSocketClass(this));
 
-        this.typeStore.addType(new RobotWorldClass(this));
-        this.typeStore.addType(new RobotClass(this));
+        // this.typeStore.addType(new WebSocketClientClass(this));
+        // this.typeStore.addType(new WebSocketClass(this));
 
-        this.typeStore.addType(new ResultSetClass(this));
-        this.typeStore.addType(new DatabaseStatementClass(this));
-        this.typeStore.addType(new DatabasePreparedStatementClass(this));
-        this.typeStore.addType(new ConnectionClass(this));
-        this.typeStore.addType(new DatabaseManagerClass(this));
+        // this.typeStore.addType(new RobotWorldClass(this));
+        // this.typeStore.addType(new RobotClass(this));
 
-    
+        // this.typeStore.addType(new ResultSetClass(this));
+        // this.typeStore.addType(new DatabaseStatementClass(this));
+        // this.typeStore.addType(new DatabasePreparedStatementClass(this));
+        // this.typeStore.addType(new ConnectionClass(this));
+        // this.typeStore.addType(new DatabaseManagerClass(this));
+
+
 
         stringPrimitiveType.module = this;
         // stringPrimitiveType.baseClass = <any>(this.typeStore.getType("Object"));
@@ -1013,7 +1017,7 @@ export class ModuleStore {
             this.baseModule = new BaseModule(main);
             this.putModule(this.baseModule);
         }
-        
+
         // additionalLibraries = ["gng"];
 
         for(let lib of additionalLibraries){
