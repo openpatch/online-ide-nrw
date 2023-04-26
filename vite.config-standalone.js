@@ -39,4 +39,4 @@ export default defineConfig({
   }
 });
 
-renameSync(join("dist", "embedded.html"), join("dist", "index.html"))
+renameSync(join("dist", "standalone.html"), join("dist", "index.html"))
