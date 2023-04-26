@@ -26,7 +26,7 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: {
-        embedded: resolve(__dirname, 'embedded.html')
+        embedded: resolve(__dirname, 'standalone.html')
       },
       output: {
         entryFileNames: assetInfo => 'online-ide-embedded.js',
@@ -38,5 +38,3 @@ export default defineConfig({
     emptyOutDir: false
   }
 });
-
-renameSync(join("dist", "standalone.html"), join("dist", "index.html"))
