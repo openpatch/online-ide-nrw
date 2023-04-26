@@ -1,4 +1,4 @@
-let base = "https://nrw.onlineide.openpatch.org";
+let base = "https://nrw.onlineide.openpatch.org/";
 
 // includeJs(base + "lib/pixijs/pixi.js");
 // includeCss(base + 'js.webpack/javaOnlineEmbedded.css');
