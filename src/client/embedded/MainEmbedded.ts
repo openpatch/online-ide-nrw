@@ -786,6 +786,7 @@ export class MainEmbedded implements MainBase {
         const json = ws.toExportedWorkspace();
         fetch("https://json.openpatch.org/api/v2/post", {
           method: "POST",
+          mode: "cors",
           headers: {
             "Content-Type": "application/json"
           },
