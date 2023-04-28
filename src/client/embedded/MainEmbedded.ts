@@ -792,7 +792,7 @@ export class MainEmbedded implements MainBase {
           },
           body: JSON.stringify(json)
         }).then((r) => r.json()).then(json => {
-          prompt("Der Upload ist abgeschlossen. Besuche die URL, um den übermittelten Stand zu laden.", json.data);
+          prompt("Der Upload ist abgeschlossen. Besuche die URL, um den übermittelten Stand zu laden.", window.location.origin + "/#json=" + json.id);
         }).catch(() => {
           alert("Beim Upload ist was schief gelaufen. Bitte versuche es erneut!");
       });
