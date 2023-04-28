@@ -125,7 +125,7 @@ export class MainEmbedded implements MainBase {
     semicolonAngel: SemicolonAngel;
 
     userSpritesheet: PIXI.Spritesheet;
-    
+
     constructor($div: JQuery<HTMLElement>, private scriptList: JOScript[]) {
 
         this.readConfig($div);
@@ -216,7 +216,7 @@ export class MainEmbedded implements MainBase {
 
         /**
          * WICHTIG: Die Reihenfolge der beiden Operationen ist extrem wichtig.
-         * Falls das Model im readonly-Zustand gesetzt wird, funktioniert <Strg + .> 
+         * Falls das Model im readonly-Zustand gesetzt wird, funktioniert <Strg + .>
          * nicht und die Lightbulbs werden nicht angezeigt, selbst dann, wenn
          * später readonly = false gesetzt wird.
          */
@@ -445,7 +445,13 @@ export class MainEmbedded implements MainBase {
 
         $buttonSave.on('click', () => { that.saveWorkspaceToFile() });
 
-        $controlsDiv.append($buttonOpen, $buttonSave);
+        let $buttonJsonStore = jQuery('<div class="img_link-dark jo_button jo_active"' +
+            'style="margin-right: 8px;" title="Workspace als URL speichern"></div>');
+
+
+        $buttonJsonStore.on('click', () => { that.saveWorkspaceToJsonStore() });
+
+        $controlsDiv.append($buttonOpen, $buttonSave, $buttonJsonStore);
 
 
 
@@ -563,7 +569,7 @@ export class MainEmbedded implements MainBase {
         <div class="jo_parenthesis_warning" title="Klammerwarnung!" style="bottom: 55px">
         <div class="jo_warning_light"></div>
         <div class="jo_pw_heading">{ }</div>
-        <div title="Letzten Schritt rückgängig" 
+        <div title="Letzten Schritt rückgängig"
             class="jo_pw_undo img_undo jo_button jo_active"></div>
         </div>
         `);
@@ -672,7 +678,7 @@ export class MainEmbedded implements MainBase {
         let $filesHeader = jQuery('<div class="joe_filesHeader jo_tabheading jo_active"  style="line-height: 24px">Programmdateien</div>');
 
         this.$filesListDiv = jQuery('<div class="joe_filesList jo_scrollable"></div>');
-        // for (let index = 0; index < 20; index++) {            
+        // for (let index = 0; index < 20; index++) {
         //     let $file = jQuery('<div class="jo_file jo_java"><div class="jo_fileimage"></div><div class="jo_filename"></div></div></div>');
         //     $filesList.append($file);
         // }
@@ -773,6 +779,22 @@ export class MainEmbedded implements MainBase {
             this.interpreter.setState(InterpreterState.done);
         }
 
+    }
+
+    saveWorkspaceToJsonStore() {
+        let ws = this.currentWorkspace;
+        const json = ws.toExportedWorkspace();
+        fetch("https://json.openpatch.org/api/v2/post", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(json)
+        }).then((r) => r.json()).then(json => {
+          prompt("Der Upload ist abgeschlossen. Besuche die URL, um den übermittelten Stand zu laden.", json.data);
+        }).catch(() => {
+          alert("Beim Upload ist was schief gelaufen. Bitte versuche es erneut!");
+      });
     }
 
 
@@ -929,18 +951,18 @@ export class MainEmbedded implements MainBase {
         <div class="jo_run-input-button-outer" class="jo_rix">
         <div class="jo_run-input-button" class="jo_rix">OK</div>
         </div>
-        
+
         <div class="jo_run-input-error" class="jo_rix"></div>
     </div>
     </div>
-    </div> 
+    </div>
     <div class="jo_run-inner">
     <div class="jo_graphics"></div>
     <div class="jo_output jo_scrollable"></div>
     </div>
-    
+
     </div>
-    
+
     `);
 
 
@@ -959,7 +981,7 @@ export class MainEmbedded implements MainBase {
             Die Variablen sind nur dann sichtbar, wenn das Programm
             <ul>
             <li>im Einzelschrittmodus ausgeführt wird(Klick auf <span class="img_step-over-dark jo_inline-image"></span>),</li>
-            <li>an einem Breakpoint hält (Setzen eines Breakpoints mit Mausklick links neben den Zeilennummern und anschließendes Starten des Programms mit 
+            <li>an einem Breakpoint hält (Setzen eines Breakpoints mit Mausklick links neben den Zeilennummern und anschließendes Starten des Programms mit
                 <span class="img_start-dark jo_inline-image"></span>) oder </li>
                 <li>in sehr niedriger Geschwindigkeit ausgeführt wird (weniger als 10 Schritte/s).
                 </ul>
@@ -988,10 +1010,8 @@ export class MainEmbedded implements MainBase {
             let spritesheet = new SpritesheetData();
 
             await spritesheet.initializeSpritesheetForWorkspace(this.currentWorkspace, this, this.config.spritesheetURL);
-    
+
         }
     }
 
 }
-
-
