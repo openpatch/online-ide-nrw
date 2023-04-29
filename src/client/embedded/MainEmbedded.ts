@@ -148,6 +148,12 @@ export class MainEmbedded implements MainBase {
       });
     }
 
+    if (window.location.hash) {
+      const id = window.location.hash.slice(6);
+      if (id && confirm("Das Laden von einem externen Workspace wird diese Workspace überschreiben. Möchtest du fortfahren?")) {
+        this.readScriptsFromJsonStore(id);
+      }
+    }
 
 
     this.semicolonAngel = new SemicolonAngel(this);
@@ -172,12 +178,6 @@ export class MainEmbedded implements MainBase {
       this.setModuleActive(this.currentWorkspace.moduleStore.getFirstModule());
     }
 
-    if (window.location.hash) {
-      const id = window.location.hash.slice(6);
-      if (id) {
-        this.readScriptsFromJsonStore(id);
-      }
-    }
   }
 
   readConfig($div: JQuery<HTMLElement>) {
