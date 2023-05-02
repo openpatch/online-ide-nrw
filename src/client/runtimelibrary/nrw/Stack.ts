@@ -136,6 +136,23 @@ export class StackClass extends Klass {
       )
     );
 
+    this.addMethod(
+      new Method(
+        "toString",
+        new Parameterlist([]),
+        stringPrimitiveType,
+        (parameters) => {
+          let o: RuntimeObject = parameters[0].value;
+          let lh: ListHelper = o.intrinsicData["ListHelper"];
+          return lh.to_String();
+        },
+        false,
+        false
+      )
+    );
+  }
+}
+
 export class ListHelper {
   valueArray: Value[] = [];
   objectArray: any[] = []; // wird mitgeführt, um schnelle indexOf-Operationen zu ermöglichen
