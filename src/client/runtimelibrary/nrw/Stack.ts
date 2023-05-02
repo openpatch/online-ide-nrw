@@ -101,7 +101,7 @@ export class StackClass extends Klass {
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
           let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.  //next();
+          lh.pop();  //next();
         },
         false,
         false,
@@ -126,7 +126,7 @@ export class StackClass extends Klass {
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
           let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.insert(parameters[1].value);
+          lh.insert(parameters[0].value);
         },
         false,
         false,
