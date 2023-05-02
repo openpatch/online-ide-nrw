@@ -20,9 +20,9 @@ import { Interpreter } from "../../interpreter/Interpreter.js";
 import { RuntimeObject } from "../../interpreter/RuntimeObject.js";
 
 export class StackClass extends Klass {
-  
+
   constructor(module: Module) {
-    
+
     super("Stack", module, "Generische Stackklasse");
 
     let objectType = module.typeStore.getType("Object");
@@ -84,6 +84,7 @@ export class StackClass extends Klass {
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
           let lh: ListHelper = o.intrinsicData["ListHelper"];
+          lh.toLast();
           return lh.getContent();
         },
         false,
@@ -92,7 +93,7 @@ export class StackClass extends Klass {
         false
       )
     );
-    
+
      this.addMethod(
       new Method(
         "pop",
@@ -101,7 +102,7 @@ export class StackClass extends Klass {
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
           let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.pop();  //next();
+          lh.pop();
         },
         false,
         false,
@@ -126,7 +127,7 @@ export class StackClass extends Klass {
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
           let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.insert(parameters[0].value);
+          lh.append(parameters[0].value);
         },
         false,
         false,
@@ -168,12 +169,12 @@ export class ListHelper {
     }
   }
 
-  remove() {
-    if (this.hasAccess()) {
-      this.valueArray.splice(this.current, 1);
-      this.objectArray.splice(this.current, 1);
-    }
-  }
+  //remove() {
+    //if (this.hasAccess()) {
+      //this.valueArray.splice(this.current, 1);
+      //this.objectArray.splice(this.current, 1);
+    //}
+  //}
 
   // copied form ListHelper
   to_String(): any {
