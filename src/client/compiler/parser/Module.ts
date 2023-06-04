@@ -1,7 +1,6 @@
 import { FileData, WorkspaceSettings } from "../../communication/Data.js";
 import { AccordionElement } from "../../main/gui/Accordion.js";
 import { MainBase } from "../../main/MainBase.js";
-import {ListClass } from "../../runtimelibrary/nrw/List.js";
 // import { ArrayListClass } from "../../runtimelibrary/collections/ArrayList.js";
 // import { CollectionClass } from "../../runtimelibrary/collections/Collection.js";
 // import { IterableClass } from "../../runtimelibrary/collections/Iterable.js";
@@ -109,6 +108,15 @@ import { JsonParserClass } from "../../runtimelibrary/network/JsonParser.js";
 import { ChangeListenerClass } from "../../runtimelibrary/graphics/gui/ChangeListener.js";
 import { GuiComponentClass } from "../../runtimelibrary/graphics/gui/GuiComponent.js";
 import { GuiTextComponentClass } from "../../runtimelibrary/graphics/gui/GuiTextComponent.js";
+
+import { ListClass } from "../../runtimelibrary/nrw/List.js";
+import { QueueClass } from "../../runtimelibrary/nrw/Queue.js";
+import { StackClass } from "../../runtimelibrary/nrw/Stack.js";
+import { BinaryTreeClass } from "../../runtimelibrary/nrw/BinaryTree.js";
+import { ComparableContentClass } from "../../runtimelibrary/nrw/ComparableContent.js";
+import { BinarySearchTreeClass } from "../../runtimelibrary/nrw/BinarySearchTree.js";
+import { VertexClass } from "../../runtimelibrary/nrw/Vertex.js";
+import { EdgeClass } from "../../runtimelibrary/nrw/Edge.js";
 
 export type ExportedWorkspace = {
     name: string;
@@ -836,6 +844,13 @@ export class BaseModule extends Module {
 
         // NRW Classes
         this.typeStore.addType(new ListClass(this));
+        this.typeStore.addType(new StackClass(this));
+        this.typeStore.addType(new QueueClass(this));
+        this.typeStore.addType(new ComparableContentClass(this));
+        this.typeStore.addType(new BinaryTreeClass(this));
+        this.typeStore.addType(new BinarySearchTreeClass(this));
+        this.typeStore.addType(new VertexClass(this));
+        this.typeStore.addType(new EdgeClass(this));
 
         // Collections Framework
         // this.typeStore.addType(new IteratorClass(this));

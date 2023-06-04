@@ -643,17 +643,20 @@ export class CodeGenerator {
             }
         }
 
-        let actorClass = <Klass>this.moduleStore.getType("Actor").type;
-        let methodIdentifiers = ["act", "onKeyTyped", "onKeyDown", "onKeyUp",
-            "onMouseDown", "onMouseUp", "onMouseMove", "onMouseEnter", "onMouseLeave"];
-        if (methodIdentifiers.indexOf(method.identifier) >= 0 && this.currentSymbolTable.classContext.hasAncestorOrIs(actorClass)) {
-            this.pushStatements([
+        let actorType = this.moduleStore.getType("Actor");
+        if (actorType) {
+          let actorClass = <Klass>actorType.type;
+          let methodIdentifiers = ["act", "onKeyTyped", "onKeyDown", "onKeyUp",
+              "onMouseDown", "onMouseUp", "onMouseMove", "onMouseEnter", "onMouseLeave"];
+          if (methodIdentifiers.indexOf(method.identifier) >= 0 && this.currentSymbolTable.classContext.hasAncestorOrIs(actorClass)) {
+              this.pushStatements([
 
-                {
-                    type: TokenType.returnIfDestroyed,
-                    position: methodNode.position
-                },
-            ]);
+                  {
+                      type: TokenType.returnIfDestroyed,
+                      position: methodNode.position
+                  },
+              ]);
+          }
         }
 
         let withReturnStatement = this.generateStatements(methodNode.statements).withReturnStatement;
@@ -1113,7 +1116,7 @@ export class CodeGenerator {
         //     if (st.parent != null) {
         //         st.parent.childSymbolTables.pop();
         //     }
-        // } else 
+        // } else
         {
             // TODO: add length of token
 
@@ -1361,7 +1364,7 @@ export class CodeGenerator {
 
             // if (typeFrom instanceof Klass &&
             //     (typeTo instanceof Klass && !typeFrom.hasAncestorOrIs(typeTo) && typeTo.hasAncestorOrIs(typeFrom)) ||
-            //     (typeTo instanceof Interface && !(<Klass>typeFrom).implementsInterface(typeTo))) 
+            //     (typeTo instanceof Interface && !(<Klass>typeFrom).implementsInterface(typeTo)))
             {
 
                 this.pushStatements({
@@ -2464,7 +2467,7 @@ export class CodeGenerator {
                     //         position: node.position,
                     //         attribute: staticAttributeWithError.attribute
                     //     });
-                    // } else 
+                    // } else
                     {
                         this.removeLastStatement();
                         this.pushStatements({
@@ -2664,14 +2667,14 @@ export class CodeGenerator {
                 type: node.type == TokenType.incrementDecrementBefore ? TokenType.incrementDecrementCharBefore : TokenType.incrementDecrementCharAfter,
                 position: node.position,
                 incrementDecrementBy: node.operator == TokenType.doubleMinus ? - 1 : 1
-    
+
             });
         } else {
             this.pushStatements({
                 type: node.type,
                 position: node.position,
                 incrementDecrementBy: node.operator == TokenType.doubleMinus ? - 1 : 1
-    
+
             });
         }
 
@@ -2682,7 +2685,7 @@ export class CodeGenerator {
 
     selectArrayElement(node: SelectArrayElementNode): StackType {
 
-        let arrayType = this.processNode(node.object); // push array-object 
+        let arrayType = this.processNode(node.object); // push array-object
         let indexType = this.processNode(node.index); // push index
 
         if (arrayType == null || indexType == null) return;
@@ -3137,8 +3140,8 @@ export class CodeGenerator {
             case TokenType.integerConstant:
                 type = intPrimitiveType;
                 break;
-            
             case TokenType.longConstant:
+
                 type = longPrimitiveType;
                 break;
             case TokenType.shortConstant:
