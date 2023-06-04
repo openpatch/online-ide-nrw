@@ -117,6 +117,7 @@ import { ComparableContentClass } from "../../runtimelibrary/nrw/ComparableConte
 import { BinarySearchTreeClass } from "../../runtimelibrary/nrw/BinarySearchTree.js";
 import { VertexClass } from "../../runtimelibrary/nrw/Vertex.js";
 import { EdgeClass } from "../../runtimelibrary/nrw/Edge.js";
+import { GraphClass } from "../../runtimelibrary/nrw/Graph.js";
 
 export type ExportedWorkspace = {
     name: string;
@@ -851,6 +852,7 @@ export class BaseModule extends Module {
         this.typeStore.addType(new BinarySearchTreeClass(this));
         this.typeStore.addType(new VertexClass(this));
         this.typeStore.addType(new EdgeClass(this));
+        this.typeStore.addType(new GraphClass(this));
 
         // Collections Framework
         // this.typeStore.addType(new IteratorClass(this));

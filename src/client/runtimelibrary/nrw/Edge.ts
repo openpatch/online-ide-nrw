@@ -1,11 +1,9 @@
 import { Module } from "../../compiler/parser/Module";
 import { ArrayType } from "../../compiler/types/Array";
-import { BooleanClass } from "../../compiler/types/boxedTypes/BooleanClass";
 import { Klass } from "../../compiler/types/Class";
 import {
   booleanPrimitiveType,
   doublePrimitiveType,
-  stringPrimitiveType,
   voidPrimitiveType,
 } from "../../compiler/types/PrimitiveTypes";
 import { Method, Parameterlist, Value } from "../../compiler/types/Types";
@@ -13,7 +11,7 @@ import { RuntimeObject } from "../../interpreter/RuntimeObject";
 
 export class EdgeClass extends Klass {
   constructor(module: Module) {
-    super("Edge", module, "Klasse Edge");
+    super("Edge", module, "Ein neues Objekt vom Typ Edge wird erstellt. Die von diesem Objekt repräsentierte Kante verbindet die Knoten pVertex und pAnotherVertex mit der Gewichtung pWeight. Ihre Markierung hat den Wert false.");
 
     let objectType = module.typeStore.getType("Object");
 

@@ -20,8 +20,8 @@ export class BinarySearchTreeClass extends Klass {
     let typeA: Klass = (<Klass>objectType).clone();
     typeA.identifier = "ContentType";
     typeA.isTypeVariable = true;
-    typeA.implementsInterface(<Interface>module.typeStore.getType("ComparableContent"))
-    // TODO should only allow types, which extends from ComparableContent interface
+    typeA.implements.push(<Interface>module.typeStore.getType("ComparableContent"));
+
     let tvA: TypeVariable = {
       identifier: "ContentType",
       scopeFrom: { line: 1, column: 1, length: 1 },

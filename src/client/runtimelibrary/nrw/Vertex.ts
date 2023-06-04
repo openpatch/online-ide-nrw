@@ -10,7 +10,7 @@ import { RuntimeObject } from "../../interpreter/RuntimeObject";
 
 export class VertexClass extends Klass {
   constructor(module: Module) {
-    super("Vertex", module, "Klasse Vertex");
+    super("Vertex", module, "Die Klasse Vertex stellt einen einzelnen Knoten eines Graphen dar. Jedes Objekt dieser Klasse verfügt über eine im Graphen eindeutige ID als String und kann diese ID zurückliefern. Darüber hinaus kann eine Markierung gesetzt und abgefragt werden.");
 
     let objectType = module.typeStore.getType("Object");
 
