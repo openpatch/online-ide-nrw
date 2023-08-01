@@ -4,11 +4,11 @@ import { GNGAttributes } from "../runtimelibrary/gng/GNGConstants.js";
 
 
 
-export class RuntimeObject {
+export class RuntimeObject<T extends {[classIdentifier: string]: any} = any> {
 
     class: Klass | StaticClass;
 
-    intrinsicData: {[classIdentifier: string]: any} = {};  // for intrinsic (= builtin) classes to store data
+    intrinsicData: T = {} as T;  // for intrinsic (= builtin) classes to store data
 
     // Attributes of class and base-classes
     // Map class-identifier to Map <attribute-identifier, attribute-value>
@@ -43,7 +43,7 @@ export class RuntimeObject {
         while(klass != null){
 
             for(let att of klass.attributes){
-                
+
                 let value:any = null;
                 if(att.type instanceof PrimitiveType){
                     value = att.type.initialValue;
@@ -57,8 +57,8 @@ export class RuntimeObject {
                 if(att.updateValue != null){
                     v.updateValue = att.updateValue;
                     v.object = this;
-                } 
-                
+                }
+
                 this.attributes[att.index] = v;
 
             }
@@ -106,4 +106,3 @@ export function deepCopy(obj: any): any {
     throw new Error("Unable to copy obj! Its type isn't supported.");
 
 }
-

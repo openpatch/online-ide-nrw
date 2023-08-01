@@ -8,10 +8,15 @@ import {
 } from "../../compiler/types/PrimitiveTypes";
 import { Method, Parameterlist, Value } from "../../compiler/types/Types";
 import { RuntimeObject } from "../../interpreter/RuntimeObject";
+import { VertexHelper } from "./Vertex";
 
 export class EdgeClass extends Klass {
   constructor(module: Module) {
-    super("Edge", module, "Ein neues Objekt vom Typ Edge wird erstellt. Die von diesem Objekt repräsentierte Kante verbindet die Knoten pVertex und pAnotherVertex mit der Gewichtung pWeight. Ihre Markierung hat den Wert false.");
+    super(
+      "Edge",
+      module,
+      "Ein neues Objekt vom Typ Edge wird erstellt. Die von diesem Objekt repräsentierte Kante verbindet die Knoten pVertex und pAnotherVertex mit der Gewichtung pWeight. Ihre Markierung hat den Wert false."
+    );
 
     let objectType = module.typeStore.getType("Object");
 
@@ -45,22 +50,17 @@ export class EdgeClass extends Klass {
         ]),
         null,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
+          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let v1: RuntimeObject<VertexHelper> = parameters[1].value;
+          let v2: RuntimeObject<VertexHelper> = parameters[2].value;
+          let eh: EdgeHelper = new EdgeHelper(
+            parameters[0],
+            v1,
+            v2,
+            parameters[3].value
+          );
 
-          let vertices: Value[] = [
-            {
-              type: module.typeStore.getType("Vertex"),
-              value: parameters[1].value,
-            },
-            {
-              type: module.typeStore.getType("Vertex"),
-              value: parameters[2].value,
-            },
-          ];
-          o.intrinsicData["vertices"] = vertices;
-
-          o.intrinsicData["weight"] = parameters[3].value;
-          o.intrinsicData["mark"] = false;
+          o.intrinsicData = eh;
         },
         false,
         false,
@@ -75,8 +75,9 @@ export class EdgeClass extends Klass {
         new Parameterlist([]),
         doublePrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          return o.intrinsicData["weight"];
+          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let eh = o.intrinsicData;
+          return eh.getWeight();
         },
         false,
         false,
@@ -99,8 +100,9 @@ export class EdgeClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          o.intrinsicData["weight"] = parameters[1].value;
+          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let eh = o.intrinsicData;
+          eh.setWeight(parameters[1].value);
         },
         false,
         false,
@@ -123,8 +125,9 @@ export class EdgeClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          o.intrinsicData["mark"] = parameters[1].value;
+          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let eh = o.intrinsicData;
+          eh.setMark(parameters[1].value);
         },
         false,
         false,
@@ -139,8 +142,9 @@ export class EdgeClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          return o.intrinsicData["mark"];
+          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let eh = o.intrinsicData;
+          return eh.isMarked();
         },
         false,
         false,
@@ -155,8 +159,11 @@ export class EdgeClass extends Klass {
         new Parameterlist([]),
         new ArrayType(module.typeStore.getType("Vertex")),
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          return o.intrinsicData["vertices"];
+          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let eh = o.intrinsicData;
+          return eh
+            .getVertices()
+            .map((v) => v.intrinsicData.getValue());
         },
         false,
         false,
@@ -164,5 +171,50 @@ export class EdgeClass extends Klass {
         false
       )
     );
+  }
+}
+
+export class EdgeHelper {
+  private value: Value;
+  private vertices: RuntimeObject<VertexHelper>[];
+  private mark: boolean;
+  private weight: number;
+
+  constructor(
+    value: Value,
+    pVertex: RuntimeObject<VertexHelper>,
+    pAnotherVertex: RuntimeObject<VertexHelper>,
+    pWeight: number
+  ) {
+    this.value = value;
+    this.vertices = [];
+    this.vertices[0] = pVertex;
+    this.vertices[1] = pAnotherVertex;
+    this.weight = pWeight;
+    this.mark = false;
+  }
+
+  getValue(): Value {
+    return this.value;
+  }
+
+  getVertices(): RuntimeObject<VertexHelper>[] {
+    return this.vertices;
+  }
+
+  setWeight(pWeight: number) {
+    this.weight = pWeight;
+  }
+
+  getWeight(): number {
+    return this.weight;
+  }
+
+  setMark(pMark: boolean) {
+    this.mark = pMark;
+  }
+
+  isMarked(): boolean {
+    return this.mark;
   }
 }

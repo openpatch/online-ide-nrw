@@ -46,9 +46,9 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         null,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
           let lh = new ListHelper(o, module.main.getInterpreter(), module);
-          o.intrinsicData["ListHelper"] = lh;
+          o.intrinsicData = lh;
         },
         false,
         false,
@@ -63,9 +63,8 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          return lh.isEmpty();
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          return o.intrinsicData.isEmpty();
         },
         false,
         false,
@@ -80,9 +79,8 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          return lh.hasAccess();
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          return o.intrinsicData.hasAccess();
         },
         false,
         false,
@@ -97,9 +95,8 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.next();
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          o.intrinsicData.next();
         },
         false,
         false,
@@ -114,9 +111,8 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.toFirst();
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          o.intrinsicData.toFirst();
         },
         false,
         false,
@@ -131,9 +127,8 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.toLast();
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          o.intrinsicData.toLast();
         },
         false,
         false,
@@ -148,9 +143,8 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         typeA,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          return lh.getContent();
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          return o.intrinsicData.getContent();
         },
         false,
         false,
@@ -173,9 +167,8 @@ export class ListClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.setContent(parameters[1]);
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          o.intrinsicData.setContent(parameters[1]);
         },
         false,
         false,
@@ -198,9 +191,8 @@ export class ListClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.append(parameters[1]);
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          o.intrinsicData.append(parameters[1]);
         },
         false,
         false,
@@ -223,9 +215,8 @@ export class ListClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.insert(parameters[1].value);
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          o.intrinsicData.insert(parameters[1].value);
         },
         false,
         false,
@@ -248,9 +239,8 @@ export class ListClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.concat(parameters[1]);
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          o.intrinsicData.concat(parameters[1]);
         },
         false,
         false,
@@ -265,9 +255,8 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.remove();
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          o.intrinsicData.remove();
         },
         false,
         false,
@@ -282,9 +271,8 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         stringPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          return lh.to_String();
+          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          return o.intrinsicData.to_String();
         },
         false,
         false
@@ -293,9 +281,9 @@ export class ListClass extends Klass {
   }
 }
 
-export class ListHelper {
+export class ListHelper<T = any> {
   valueArray: Value[] = [];
-  objectArray: any[] = []; // wird mitgeführt, um schnelle indexOf-Operationen zu ermöglichen
+  objectArray: RuntimeObject<T>[] = []; // wird mitgeführt, um schnelle indexOf-Operationen zu ermöglichen
   current: number = -1;
 
   constructor(
@@ -350,7 +338,7 @@ export class ListHelper {
     if (v.type !== nullType) {
       if (this.current > -1) {
         this.valueArray.splice(this.current, 0, v);
-        this.objectArray.splice(this.current, 0, v);
+        this.objectArray.splice(this.current, 0, v.value);
       }
     }
   }

@@ -1,16 +1,21 @@
 import { Module } from "../../compiler/parser/Module";
-import { Klass } from "../../compiler/types/Class";
+import { Interface, Klass } from "../../compiler/types/Class";
+import { Enum } from "../../compiler/types/Enum";
 import {
   booleanPrimitiveType,
   stringPrimitiveType,
   voidPrimitiveType,
 } from "../../compiler/types/PrimitiveTypes";
-import { Method, Parameterlist } from "../../compiler/types/Types";
+import { Method, Parameterlist, Value } from "../../compiler/types/Types";
 import { RuntimeObject } from "../../interpreter/RuntimeObject";
 
 export class VertexClass extends Klass {
   constructor(module: Module) {
-    super("Vertex", module, "Die Klasse Vertex stellt einen einzelnen Knoten eines Graphen dar. Jedes Objekt dieser Klasse verfügt über eine im Graphen eindeutige ID als String und kann diese ID zurückliefern. Darüber hinaus kann eine Markierung gesetzt und abgefragt werden.");
+    super(
+      "Vertex",
+      module,
+      "Die Klasse Vertex stellt einen einzelnen Knoten eines Graphen dar. Jedes Objekt dieser Klasse verfügt über eine im Graphen eindeutige ID als String und kann diese ID zurückliefern. Darüber hinaus kann eine Markierung gesetzt und abgefragt werden."
+    );
 
     let objectType = module.typeStore.getType("Object");
 
@@ -30,9 +35,11 @@ export class VertexClass extends Klass {
         ]),
         null,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          o.intrinsicData["id"] = parameters[1].value;
-          o.intrinsicData["mark"] = false;
+          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          o.intrinsicData = new VertexHelper(
+            parameters[0],
+            parameters[1].value
+          );
         },
         false,
         false,
@@ -47,8 +54,8 @@ export class VertexClass extends Klass {
         new Parameterlist([]),
         stringPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          return o.intrinsicData["id"];
+          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          return o.intrinsicData.getID();
         },
         false,
         false,
@@ -71,8 +78,8 @@ export class VertexClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          o.intrinsicData["mark"] = parameters[1].value;
+          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          o.intrinsicData.setMark(parameters[1].value);
         },
         false,
         false,
@@ -87,8 +94,8 @@ export class VertexClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          return o.intrinsicData["mark"];
+          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          return o.intrinsicData.isMarked();
         },
         false,
         false,
@@ -96,5 +103,53 @@ export class VertexClass extends Klass {
         false
       )
     );
+
+    this.addMethod(
+      new Method(
+        "toString",
+        new Parameterlist([]),
+        stringPrimitiveType,
+        (parameters) => {
+          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          return o.intrinsicData.toString();
+        },
+        false,
+        false,
+        "",
+        false
+      )
+    );
+  }
+}
+
+export class VertexHelper {
+  private value: Value;
+  private id: string;
+  private mark: boolean;
+
+  constructor(value: Value, id: string) {
+    this.value = value;
+    this.id = id;
+    this.mark = false;
+  }
+
+  getID(): string {
+    return this.id;
+  }
+
+  setMark(pMark: boolean) {
+    this.mark = pMark;
+  }
+
+  isMarked(): boolean {
+    return this.mark;
+  }
+
+  getValue(): Value {
+    return this.value;
+  }
+
+  toString(): string {
+    return `Vertex ${this.id} ${this.mark ? "✔" : "❌"}`;
   }
 }
