@@ -43,7 +43,7 @@ export class StackClass extends Klass {
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
           let lh = new ListHelper(o, module.main.getInterpreter(), module);
-          o.intrinsicData["ListHelper"] = lh;
+          o.intrinsicData = lh;
         },
         false,
         false,
@@ -59,7 +59,7 @@ export class StackClass extends Klass {
         booleanPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
+          let lh: ListHelper = o.intrinsicData;
           return lh.isEmpty();
         },
         false,
@@ -76,7 +76,7 @@ export class StackClass extends Klass {
         typeA,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
+          let lh: ListHelper = o.intrinsicData;
           lh.toLast();
           return lh.getContent();
         },
@@ -94,7 +94,7 @@ export class StackClass extends Klass {
         voidPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
+          let lh: ListHelper = o.intrinsicData;
           lh.toLast();
           lh.remove();
         },
@@ -120,27 +120,12 @@ export class StackClass extends Klass {
         voidPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          lh.append(parameters[0].value);
+          let lh: ListHelper = o.intrinsicData;
+          lh.append(parameters[1]);
         },
         false,
         false,
         "Das Objekt pContent wird oben auf den Stapel gelegt. Falls pContent gleich null ist, bleibt der Stapel unverändert. ",
-        false
-      )
-    );
-
-    this.addMethod(
-      new Method(
-        "toString",
-        new Parameterlist([]),
-        stringPrimitiveType,
-        (parameters) => {
-          let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData["ListHelper"];
-          return lh.to_String();
-        },
-        false,
         false
       )
     );

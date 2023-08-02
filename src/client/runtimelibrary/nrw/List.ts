@@ -216,7 +216,7 @@ export class ListClass extends Klass {
         voidPrimitiveType,
         (parameters) => {
           let o: RuntimeObject<ListHelper> = parameters[0].value;
-          o.intrinsicData.insert(parameters[1].value);
+          o.intrinsicData.insert(parameters[1]);
         },
         false,
         false,
@@ -264,20 +264,6 @@ export class ListClass extends Klass {
         false
       )
     );
-
-    this.addMethod(
-      new Method(
-        "toString",
-        new Parameterlist([]),
-        stringPrimitiveType,
-        (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
-          return o.intrinsicData.to_String();
-        },
-        false,
-        false
-      )
-    );
   }
 }
 
@@ -316,6 +302,10 @@ export class ListHelper<T = any> {
     }
   }
 
+  getValue() {
+    return this.valueArray[this.current];
+  }
+
   getContent() {
     return this.objectArray[this.current];
   }
@@ -329,6 +319,9 @@ export class ListHelper<T = any> {
 
   append(v: Value) {
     if (v.type !== nullType) {
+      if (this.isEmpty()) {
+        this.current = 0;
+      }
       this.valueArray.push(v);
       this.objectArray.push(v.value);
     }
