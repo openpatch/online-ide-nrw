@@ -120,6 +120,32 @@ export class BinarySearchTreeClass extends Klass {
 
     this.addMethod(
       new Method(
+        "remove",
+        new Parameterlist([
+          {
+            identifier: "pContent",
+            type: typeA,
+            declaration: null,
+            usagePositions: null,
+            isFinal: true,
+          },
+        ]),
+        voidPrimitiveType,
+        (parameters) => {
+          let o: RuntimeObject<BinarySearchTreeHelper> = parameters[0].value;
+          let h = o.intrinsicData;
+          return h.remove(parameters[1].value);
+        },
+        false,
+        false,
+        "Falls ein Objekt im binären Suchbaum enthalten ist, das gleichgroß ist wie pContent, wird dieses entfernt. Falls der Parameter null ist, ändert sich nichts.",
+        false
+      )
+    );
+
+
+    this.addMethod(
+      new Method(
         "getContent",
         new Parameterlist([]),
         typeA,
@@ -173,8 +199,8 @@ export class BinarySearchTreeClass extends Klass {
 
 class NodeHelper<T> {
   content: RuntimeObject<T> = null;
-  left: BinarySearchTreeHelper<T> = null;
-  right: BinarySearchTreeHelper<T> = null;
+  left: RuntimeObject<BinarySearchTreeHelper> = null;
+  right: RuntimeObject<BinarySearchTreeHelper> = null;
   interpreter: Interpreter;
 
   public constructor(
@@ -183,8 +209,21 @@ class NodeHelper<T> {
     interpreter: Interpreter
   ) {
     this.content = pContent;
-    this.left = new BinarySearchTreeHelper<T>(bstO, interpreter);
-    this.right = new BinarySearchTreeHelper<T>(bstO, interpreter);
+
+    const bstLeft = new RuntimeObject<BinarySearchTreeHelper>(
+      bstO.class
+    );
+    (<Klass>bstLeft.class)
+      .getMethodBySignature("BinarySearchTree()")
+      .invoke?.([{ type: bstO.class, value: bstLeft }]);
+    const bstRight = new RuntimeObject<BinarySearchTreeHelper>(
+      bstO.class
+    );
+    (<Klass>bstRight.class)
+      .getMethodBySignature("BinarySearchTree()")
+      .invoke?.([{ type: bstO.class, value: bstRight }]);
+    this.left = bstLeft;
+    this.right = bstRight;
     this.interpreter = interpreter;
   }
 
@@ -207,10 +246,11 @@ class NodeHelper<T> {
 
   isLess(o: RuntimeObject): boolean {
     const method: Method = (<Klass>this.content.class).getMethodBySignature(
-      "isLess(Integer)"
+      `isLess(${o.class.identifier})`
     );
     const result = this.execute(method, [
-      { type: this.content.class, value: o },
+      { type: this.content.class, value: this.content },
+      { type: o.class, value: o },
     ]);
     if (result.error != null) {
       this.interpreter.throwException(
@@ -224,10 +264,11 @@ class NodeHelper<T> {
 
   isGreater(o: RuntimeObject): boolean {
     const method: Method = (<Klass>this.content.class).getMethodBySignature(
-      "isGreater(Integer)"
+      `isGreater(${o.class.identifier})`
     );
     const result = this.execute(method, [
-      { type: this.content.class, value: o },
+      { type: this.content.class, value: this.content },
+      { type: o.class, value: o },
     ]);
     if (result.error != null) {
       this.interpreter.throwException(
@@ -241,10 +282,11 @@ class NodeHelper<T> {
 
   isEqual(o: RuntimeObject): boolean {
     const method: Method = (<Klass>this.content.class).getMethodBySignature(
-      "isEqual(Integer)"
+      `isEqual(${o.class.identifier})`
     );
     const result = this.execute(method, [
-      { type: this.content.class, value: o },
+      { type: this.content.class, value: this.content },
+      { type: o.class, value: o },
     ]);
     if (result.error != null) {
       this.interpreter.throwException(
@@ -279,9 +321,9 @@ export class BinarySearchTreeHelper<T = any> extends BinaryTreeHelper<T> {
         this.node = new NodeHelper<T>(this.object, pContent, this.interpreter);
         return;
       } else if (this.node.isLess(pContent)) {
-        this.node.right.insert(pContent);
+        this.node.right.intrinsicData.insert(pContent);
       } else if (this.node.isGreater(pContent)) {
-        this.node.left.insert(pContent);
+        this.node.left.intrinsicData.insert(pContent);
       }
     }
   }
@@ -290,7 +332,7 @@ export class BinarySearchTreeHelper<T = any> extends BinaryTreeHelper<T> {
     if (this.isEmpty()) {
       return null;
     } else {
-      return this.node.left.object;
+      return this.node.left;
     }
   }
 
@@ -306,7 +348,7 @@ export class BinarySearchTreeHelper<T = any> extends BinaryTreeHelper<T> {
     if (this.isEmpty()) {
       return null;
     } else {
-      return this.node.right.object;
+      return this.node.right;
     }
   }
 
@@ -316,27 +358,27 @@ export class BinarySearchTreeHelper<T = any> extends BinaryTreeHelper<T> {
     }
 
     if (this.node.isGreater(pContent)) {
-      this.node.left.remove(pContent);
+      this.node.left.intrinsicData.remove(pContent);
     } else if (this.node.isLess(pContent)) {
-      this.node.right.remove(pContent);
+      this.node.right.intrinsicData.remove(pContent);
     } else {
-      if (this.node.left.isEmpty()) {
-        if (this.node.right.isEmpty()) {
+      if (this.node.left.intrinsicData.isEmpty()) {
+        if (this.node.right.intrinsicData.isEmpty()) {
           this.node = null;
         } else {
           this.node = this.getNodeOfRightSuccessor();
         }
-      } else if (this.node.right.isEmpty()) {
+      } else if (this.node.right.intrinsicData.isEmpty()) {
         this.node = this.getNodeOfLeftSuccessor();
       } else {
-        if (this.getNodeOfRightSuccessor().left.isEmpty()) {
+        if (this.getNodeOfRightSuccessor().left.intrinsicData.isEmpty()) {
           this.node.content = this.getNodeOfRightSuccessor().content;
           this.node.right = this.getNodeOfRightSuccessor().right;
         } else {
-          let previous = this.node.right.ancestorOfSmallRight();
+          let previous = this.node.right.intrinsicData.ancestorOfSmallRight();
           let smallest = previous.node.left;
-          this.node.content = smallest.node.content;
-          previous.remove(smallest.node.content);
+          this.node.content = smallest.intrinsicData.node.content;
+          previous.remove(smallest.intrinsicData.node.content);
         }
       }
     }
@@ -346,32 +388,30 @@ export class BinarySearchTreeHelper<T = any> extends BinaryTreeHelper<T> {
     if (this.isEmpty() || pContent == null) {
       return null;
     } else {
-      let content = this.getContent();
-      let n = new NodeHelper(this.object, pContent, this.interpreter);
-      if (n.isLess(content)) {
-        return this.getLeftTree().intrinsicData.search(pContent);
-      } else if (n.isGreater(content)) {
+      if (this.node.isLess(pContent)) {
         return this.getRightTree().intrinsicData.search(pContent);
-      } else if (n.isEqual(content)) {
-        return content;
+      } else if (this.node.isGreater(pContent)) {
+        return this.getLeftTree().intrinsicData.search(pContent);
+      } else if (this.node.isEqual(pContent)) {
+        return pContent;
       }
     }
     return null;
   }
 
   private getNodeOfLeftSuccessor(): NodeHelper<T> {
-    return this.node.left.node;
+    return this.node.left.intrinsicData.node;
   }
 
   private getNodeOfRightSuccessor(): NodeHelper<T> {
-    return this.node.right.node;
+    return this.node.right.intrinsicData.node;
   }
 
   private ancestorOfSmallRight(): BinarySearchTreeHelper<T> {
-    if (this.getNodeOfLeftSuccessor().left.isEmpty()) {
+    if (this.getNodeOfLeftSuccessor().left.intrinsicData.isEmpty()) {
       return this;
     } else {
-      return this.node.left.ancestorOfSmallRight();
+      return this.node.left.intrinsicData.ancestorOfSmallRight();
     }
   }
 }
