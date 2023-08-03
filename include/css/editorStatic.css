@@ -8,7 +8,7 @@ html, body {
     background-color: var(--backgroundDark);
     font-family: 'Roboto', sans-serif;
     /* font-weight: 500; */
-    overflow: hidden;
+    overflow: auto;
     font-size: 10pt;
 }
 
@@ -18,4 +18,24 @@ html, body {
 .inline {
     height:100% !important;
     width:100% !important;
+}
+
+#pruefunglaeuft {
+    display: none;
+    background-color: #2f8024;
+    padding: 3px;
+    text-align: center;
+}
+
+#pruefunglaeuft>span {
+    display: inline-block;
+    position: relative;
+    top: 1px;
+    margin-right: 5px;
+}
+
+@media screen and (max-width: 1000px) {
+    .isidigitalimg, #jo_login_new {
+        display: none;
+    }
 }

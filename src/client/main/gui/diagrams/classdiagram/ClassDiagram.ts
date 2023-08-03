@@ -71,6 +71,21 @@ export class ClassDiagram extends Diagram {
         });
     }
 
+    duplicateSerializedClassDiagram(oldWorkspaceId: number, newWorkspaceId: number){
+        let classBoxesSrc: ClassBoxes = this.classBoxesRepository[oldWorkspaceId];
+
+        let classBoxesDest: ClassBoxes = {
+            inactive: classBoxesSrc.active.map(cb => cb.copy()).concat(classBoxesSrc.inactive.map(cb => cb.copy())),
+            active: [],
+            displaySystemClasses: classBoxesSrc.displaySystemClasses,
+            parametersWithTypes: classBoxesSrc.parametersWithTypes 
+        };
+
+        this.classBoxesRepository[newWorkspaceId] = classBoxesDest;
+        this.dirty = true;
+
+    }
+
     clearAfterLogout() {
         this.classBoxesRepository = {};
         this.arrows.forEach((arrow) => { arrow.remove(); });

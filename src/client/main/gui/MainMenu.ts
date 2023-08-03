@@ -132,8 +132,14 @@ export class MainMenu {
 
                             { identifier: "-" },
                             { identifier: "Zoom out (Strg + Mausrad)", action: () => { this.main.editor.changeEditorFontSize(-4); } },
-                            { identifier: "Zoom normal", action: () => { this.main.editor.setFontSize(14); }},
+                            { identifier: "Zoom normal", action: () => { this.main.editor.setFontSize(14); } },
                             { identifier: "Zoom in (Strg + Mausrad)", action: () => { this.main.editor.changeEditorFontSize(4); } },
+                            { identifier: "-" },
+                            { identifier: "Automatischer Zeilenumbruch ein/aus", action: () => { 
+                                let wordWrap = this.main.editor.editor.getOption(monaco.editor.EditorOption.wordWrap); 
+                                wordWrap = wordWrap == "on" ? "off" : "on";
+                                this.main.editor.editor.updateOptions({wordWrap: wordWrap});
+                            } },
 
                         ]
                     }
@@ -143,11 +149,11 @@ export class MainMenu {
                         items: [
                             {
                                 identifier: "Eigene Repositories verwalten ...",
-                                action: () => {this.main.repositoryUpdateManager.show(null)}
+                                action: () => { this.main.repositoryUpdateManager.show(null) }
                             },
                             {
                                 identifier: "Workspace mit Repository verbinden (checkout) ...",
-                                action: () => {this.main.repositoryCheckoutManager.show(null)}
+                                action: () => { this.main.repositoryCheckoutManager.show(null) }
                             },
                         ]
                     }
@@ -157,7 +163,7 @@ export class MainMenu {
                         items: [
                             {
                                 identifier: "Spritesheet ergänzen ...",
-                                action: () => {this.main.spriteManager.show()}
+                                action: () => { this.main.spriteManager.show() }
                             },
                             { identifier: "-" },
                             {
@@ -257,30 +263,30 @@ export class MainMenu {
 
         if (user != null && (user.is_admin || user.is_schooladmin || user.is_teacher)) {
             mainMenu.items[0].subMenu.items.push(
-                        {
-                            identifier: "Schulen/Klassen/Benutzer ...",
-                            link: serverURL + "administration_mc.html?csrfToken=" + csrfToken
-                        }
+                {
+                    identifier: "Schulen/Klassen/Benutzer ...",
+                    link: serverURL + "administration_mc.html?csrfToken=" + csrfToken
+                }
             )
         }
 
-        if (user != null && (user.is_admin )) {
+        if (user != null && (user.is_admin)) {
             mainMenu.items[0].subMenu.items.push(
-                        {
-                            identifier: "Serverauslastung ...",
-                            link: serverURL + "statistics.html?csrfToken=" + csrfToken
-                        },{
-                            identifier:"Shutdown server...",
-                            action: () => {
-                                if(confirm("Server wirklich herunterfahren?")){
-                                    ajax("shutdown", {}, () => {
-                                        alert('Server erfolgreich heruntergefahren.');
-                                    }, (message) => {
-                                        alert(message);
-                                    })
-                                }
-                            }
-                        }
+                {
+                    identifier: "Serverauslastung ...",
+                    link: serverURL + "statistics.html?csrfToken=" + csrfToken
+                }, {
+                identifier: "Shutdown server...",
+                action: () => {
+                    if (confirm("Server wirklich herunterfahren?")) {
+                        ajax("shutdown", {}, () => {
+                            alert('Server erfolgreich heruntergefahren.');
+                        }, (message) => {
+                            alert(message);
+                        })
+                    }
+                }
+            }
             )
         }
 
@@ -308,18 +314,22 @@ export class MainMenu {
             if (mi.identifier == '-') {
                 mi.$element = jQuery('<div class="jo_menuitemdivider"></div>');
             } else {
-                let noHoverKlass = mi.noHoverAnimation ? ' class="jo_menuitem_nohover"': '';
+                let noHoverKlass = mi.noHoverAnimation ? ' class="jo_menuitem_nohover"' : '';
                 mi.$element = jQuery(`<div${noHoverKlass}>${mi.identifier}</div>`);
                 if (mi.link != null) {
                     let $link = jQuery('<a href="' + mi.link + '" target="_blank" class="jo_menulink"></a>');
-                    $link.on("mousedown", (event) => {
+                    $link.on("pointerdown", (event) => {
                         event.stopPropagation();
+                    })
+                    $link.on("pointerup", (ev) => {
+                        ev.stopPropagation();
                         setTimeout(() => {
                             menu.$element.hide();
                         }, 500);
                     })
                     $link.append(mi.$element);
                     mi.$element = $link;
+
                 }
                 if (mi.subMenu != null) {
                     this.initMenu(mi.subMenu, level + 1);
@@ -334,7 +344,7 @@ export class MainMenu {
         }
 
         let that = this;
-        jQuery(document).on('mousedown', () => {
+        jQuery(document).on('pointerdown', () => {
             for (let i = 0; i < 5; i++) {
                 if (that.currentSubmenu[i] != null) {
                     that.currentSubmenu[i].hide();
@@ -350,7 +360,22 @@ export class MainMenu {
         let that = this;
 
         if (mi.action != null) {
-            mi.$element.on('mousedown', (ev) => { mi.action(mi.identifier); });
+            mi.$element.on('pointerdown', (ev) => {
+                ev.stopPropagation();
+            })
+
+
+            mi.$element.on('pointerup', (ev) => {
+                ev.stopPropagation();
+                mi.action(mi.identifier);
+                for (let i = 0; i < 5; i++) {
+                    if (that.currentSubmenu[i] != null) {
+                        that.currentSubmenu[i].hide();
+                        that.currentSubmenu[i] = null;
+                    }
+                }
+                that.openSubmenusOnMousemove = false;
+            });
         }
 
         if (mi.subMenu != null) {

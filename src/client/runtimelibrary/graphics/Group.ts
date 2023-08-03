@@ -181,6 +181,22 @@ export class GroupClass extends Klass {
 
             }, false, false, 'Gibt die Objekte der Gruppe zurück, die mit dem übergebenen Shape kollidieren.', false));
 
+        this.addMethod(new Method("indexOf", new Parameterlist([
+            { identifier: "shape", type: module.typeStore.getType("Shape"), declaration: null, usagePositions: null, isFinal: true },
+
+        ]), intPrimitiveType,
+            (parameters) => {
+
+                let o: RuntimeObject = parameters[0].value;
+                let shape: RuntimeObject = parameters[1].value;
+                let sh: GroupHelper = <GroupHelper>o.intrinsicData["Actor"];
+
+                if (sh.testdestroyed("indexOf") || shape == null) return [];
+
+                return sh.indexOf(shape);
+
+            }, false, false, 'Gibt den Index des übergebenen Elements zurück. 0 bedeutet: erstes Element, -1 bedeutet: Das Element ist nicht in der Group enthalten.', false));
+
         this.addMethod(new Method("getCollisionPairs", new Parameterlist([
             { identifier: "group", type: this, declaration: null, usagePositions: null, isFinal: true },
             { identifier: "maxOneCollisionPerShape", type: booleanPrimitiveType, declaration: null, usagePositions: null, isFinal: true },
@@ -317,6 +333,13 @@ export class GroupHelper extends ShapeHelper {
 
     }
 
+    indexOf(shape: RuntimeObject): any {
+        for(let i = 0; i < this.shapes.length; i++){
+            if(shape == this.shapes[i]) return i;
+        }
+        return -1;
+    }
+
     setChildIndex(sh: ShapeHelper, index: number) {
         let container: PIXI.Container = <PIXI.Container>this.displayObject;
         container.setChildIndex(sh.displayObject, index);
@@ -391,6 +414,40 @@ export class GroupHelper extends ShapeHelper {
 
     }
 
+    collidesWithAnyShape(color?: number): boolean {
+
+        for (let shapeHelper of this.worldHelper.shapes) {
+            if (this == shapeHelper) continue;
+
+            if (shapeHelper["fillColor"] && color != null) {
+                if (shapeHelper["fillColor"] != color) {
+                    continue;
+                }
+            }
+
+            if (shapeHelper["shapes"] || shapeHelper["turtle"]) {
+                if (shapeHelper.collidesWith(this)) {
+                    return true;
+                } else {
+                    continue;
+                }
+            }
+
+            if(this.collidesWith(shapeHelper)) return true;
+
+        }
+
+        return false;
+
+    }
+
+    transformHitPolygon(){
+        for(let rto of this.shapes){
+            let shape = <ShapeHelper>rto.intrinsicData["Actor"];
+            shape.transformHitPolygon();
+        }
+        this.hitPolygonDirty = false;
+    }
 
     add(shape: RuntimeObject) {
 

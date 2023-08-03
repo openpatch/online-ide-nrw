@@ -326,6 +326,19 @@ export class SpriteClass extends Klass {
 
             }, false, false, "Gibt die Höhe zurück.", false));
 
+        this.addMethod(new Method("getImageIndex", new Parameterlist([
+        ]), intPrimitiveType,
+            (parameters) => {
+
+                let o: RuntimeObject = parameters[0].value;
+                let sh: SpriteHelper = o.intrinsicData["Actor"];
+
+                if (sh.testdestroyed("getImageIndex")) return;
+
+                return sh.index;
+
+            }, false, false, "Gibt den Index des Bildes innerhalb der Sprite-Library zurück.", false));
+
         this.addMethod(new Method("makeTiling", new Parameterlist([
             { identifier: "width", type: doublePrimitiveType, declaration: null, usagePositions: null, isFinal: true },
             { identifier: "height", type: doublePrimitiveType, declaration: null, usagePositions: null, isFinal: true }
@@ -404,7 +417,7 @@ export class SpriteHelper extends ShapeHelper {
     isTileSprite: boolean = false;
 
     constructor(public x: number, public y: number, public name: string, public index: number,
-        interpreter: Interpreter, runtimeObject: RuntimeObject, copyFromOtherShape?: ShapeHelper,
+        private interpreter: Interpreter, runtimeObject: RuntimeObject, copyFromOtherShape?: ShapeHelper,
         public scaleMode: string = "nearest_neighbour") {
         super(interpreter, runtimeObject);
 
@@ -584,7 +597,7 @@ export class SpriteHelper extends ShapeHelper {
         let texture = sheet.textures[nameWithIndex];
         if(texture == null){
             sheet = this.worldHelper.interpreter.main.userSpritesheet;
-            texture = sheet.textures[nameWithIndex];
+            texture = sheet?.textures[nameWithIndex];
         }
 
         if (texture != null) {
@@ -657,6 +670,8 @@ export class SpriteHelper extends ShapeHelper {
             this.hitPolygonDirty = true;
 
         } else {
+            this.interpreter.throwException("Das Spritesheet " + name + " hat kein Bild mit Index " + index);
+
             if (this.displayObject == null) {
                 this.displayObject = new PIXI.Sprite();
             }

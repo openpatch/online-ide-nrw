@@ -130,7 +130,8 @@ export class WorkspaceImporter {
                                     externalElement: ws,
                                     iconClass: "workspace",
                                     isFolder: false,
-                                    path: that.path
+                                    path: that.path,
+                                    readonly: false
                                 }, true);
 
                                 for(let mo of wse.modules){
@@ -146,7 +147,6 @@ export class WorkspaceImporter {
                                         is_copy_of_id: null,
                                         repository_file_version: null,
                                         identical_to_repository_version: null,
-                                        file_type: 0
                                     };
                                     let m = new Module(f, this.main);
                                     ws.moduleStore.putModule(m);

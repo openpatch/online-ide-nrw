@@ -394,7 +394,6 @@ export class MainEmbedded implements MainBase {
         workspace_id: 0,
         forceUpdate: false,
         identical_to_repository_version: false,
-        file_type: 0,
       },
       this
     );
@@ -943,21 +942,75 @@ export class MainEmbedded implements MainBase {
             <div class="jo_commandline"></div>
         </div>
         </div>
-    `
-      );
+    `);
 
-      $tabs.append($tabConsole);
+        $tabs.append($tabConsole);
     }
 
-    if (this.config.withPCode) {
-      let $tabPCode = jQuery(
-        '<div class="jo_scrollable jo_pcodeTab">PCode</div>'
-      );
-      $tabs.append($tabPCode);
+        if (this.config.withPCode) {
+            let $tabPCode = jQuery('<div class="jo_scrollable jo_pcodeTab">PCode</div>');
+            $tabs.append($tabPCode);
+        }
+
+        $bottomDiv.append($tabs);
+
+    }
+    loadWorkspaceFromFile(file: globalThis.File) {
+        let that = this;
+        if (file == null) return;
+        var reader = new FileReader();
+        reader.onload = (event) => {
+            let text: string = <string>event.target.result;
+            if (!text.startsWith("{")) {
+                alert(`<div>Das Format der Datei ${file.name} passt nicht.</div>`);
+                return;
+            }
+
+            let ew: ExportedWorkspace = JSON.parse(text);
+
+            if (ew.modules == null || ew.name == null || ew.settings == null) {
+                alert(`<div>Das Format der Datei ${file.name} passt nicht.</div>`);
+                return;
+            }
+
+            let ws: Workspace = new Workspace(ew.name, this, 0);
+            ws.settings = ew.settings;
+            ws.alterAdditionalLibraries();
+
+            for (let mo of ew.modules) {
+                let f: File = {
+                    name: mo.name,
+                    dirty: false,
+                    saved: true,
+                    text: mo.text,
+                    text_before_revision: null,
+                    submitted_date: null,
+                    student_edited_after_revision: false,
+                    version: 1,
+                    is_copy_of_id: null,
+                    repository_file_version: null,
+                    identical_to_repository_version: null,
+                };
+
+                let m = new Module(f, this);
+                ws.moduleStore.putModule(m);
+            }
+            that.currentWorkspace = ws;
+
+            if(that.fileExplorer != null){
+                that.fileExplorer.removeAllFiles();
+                ws.moduleStore.getModules(false).forEach(module => that.fileExplorer.addModule(module));
+                that.fileExplorer.setFirstFileActive();
+            } else {
+                this.setModuleActive(this.currentWorkspace.moduleStore.getFirstModule());
+            }
+
+            that.saveScripts();
+
+        };
+        reader.readAsText(file);
     }
 
-    $bottomDiv.append($tabs);
-  }
   loadWorkspaceFromText(text: string) {
     let ew: ExportedWorkspace = JSON.parse(text);
 
@@ -983,7 +1036,6 @@ export class MainEmbedded implements MainBase {
         is_copy_of_id: null,
         repository_file_version: null,
         identical_to_repository_version: null,
-        file_type: 0,
       };
 
       let m = new Module(f, this);
@@ -1002,19 +1054,6 @@ export class MainEmbedded implements MainBase {
     }
 
     this.saveScripts();
-  }
-  loadWorkspaceFromFile(file: globalThis.File) {
-    if (file == null) return;
-    var reader = new FileReader();
-    reader.onload = (event) => {
-      let text: string = <string>event.target.result;
-      if (!text.startsWith("{")) {
-        alert(`<div>Das Format der Datei ${file.name} passt nicht.</div>`);
-        return;
-      }
-      this.loadWorkspaceFromText(text);
-    };
-    reader.readAsText(file);
   }
 
   makeRightDiv(): JQuery<HTMLElement> {

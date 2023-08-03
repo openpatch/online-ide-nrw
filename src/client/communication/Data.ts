@@ -46,8 +46,7 @@ export type FileData = {
     forceUpdate: boolean,
     is_copy_of_id?: number,
     repository_file_version?: number,
-    identical_to_repository_version: boolean,
-    file_type: number // 0 == Java, 1 == Textfile
+    identical_to_repository_version: boolean
 }
 
 export type WorkspaceData = {
@@ -64,10 +63,8 @@ export type WorkspaceData = {
     repository_id: number,    // id of repository-workspace
     has_write_permission_to_repository: boolean, // true if owner of this working copy has write permission to repository workspace
 
-    language: number,
-    sql_baseDatabase: string,
-    sql_manipulateDatabaseStatements: string,
-    sql_history: string, 
+    pruefungId: number,
+    readonly: boolean,
 
     spritesheetId: number
 }
@@ -157,13 +154,11 @@ export type TeacherData = {
 
 export type LoginRequest = {
     username: string,
-    password: string,
-    language: number
+    password: string
 }
 
 export type TicketLoginRequest = {
-    ticket: string,
-    language: number
+    ticket: string
 }
 
 export type LoginResponse = {
@@ -171,7 +166,8 @@ export type LoginResponse = {
     user: UserData,
     classdata: ClassData[], // null if !is_teacher
     workspaces: Workspaces,
-    isTestuser: boolean
+    isTestuser: boolean,
+    activePruefung: Pruefung
 }
 
 export type LogoutRequest = {
@@ -187,15 +183,15 @@ export type SendUpdatesRequest = {
     files: FileData[],
     owner_id: number,
     userId: number,
-    language: number,
     currentWorkspaceId: number,
     getModifiedWorkspaces: boolean
 }
 
 export type SendUpdatesResponse = {
+    success: boolean,
     workspaces: Workspaces,
     filesToForceUpdate: FileData[],
-    success: boolean
+    activePruefung: Pruefung
 }
 
 export type UpdateUserSettingsRequest = {
@@ -256,8 +252,7 @@ export type BulkCreateUsersResponse = {
 
 export type GetWorkspacesRequest = {
     ws_userId: number,
-    userId: number,
-    language: number
+    userId: number
 }
 
 export type GetWorkspacesResponse = {
@@ -280,8 +275,7 @@ export type ChangeClassOfStudentsResponse = {
  * Copies Workspace and returns copy.
  */
 export type DuplicateWorkspaceRequest = {
-    workspace_id: number, // Workspace to copy
-    language: number
+    workspace_id: number // Workspace to copy
 }
 
 export type DuplicateWorkspaceResponse = {
@@ -313,7 +307,6 @@ export type DeleteRepositoryResponse = { success: boolean, message?: string };
  */
 export type DistributeWorkspaceRequest = {
     workspace_id: number, // Workspace to copy
-    language: number, // 0 == Java, 1 == SQL
     class_id: number,
     student_ids: number[]
 }
@@ -780,4 +773,66 @@ export type UploadSpriteResponse = {
     success: boolean,
     message: string,
     spriteFileId: number
+}
+
+export type PruefungState = "preparing" | "running" | "correcting" | "opening";
+export var PruefungCaptions: {[index: string]: string} = {
+    "preparing": "Vorbereitung",
+    "running": "Pr. läuft!",
+    "correcting": "Korrektur",
+    "opening": "Herausgabe"
+}
+
+export type Pruefung = {
+    id: number,
+    name: string,
+    klasse_id: number,
+    template_workspace_id: number,
+    state: PruefungState;
+}
+
+export type CRUDPruefungRequest = {
+    pruefung?: Pruefung,
+    requestType: "create" | "update" | "delete"
+}
+
+export type CRUDPruefungResponse = {
+    success: boolean,
+    newPruefungWithIds?: Pruefung,
+    message: string
+}
+
+
+
+export type StudentPruefungStateInfo = {
+    timestamp: number,
+    state: string,
+    running: boolean
+} 
+
+export type GetPruefungStudentStatesRequest = {
+    pruefungId: number
+}
+
+export type GetPruefungStudentStatesResponse = {
+    success: boolean,
+    pruefungState: string,
+    pruefungStudentStates: {[id: number]: StudentPruefungStateInfo},
+    message: string
+}
+
+
+// data class ReportPruefungStudentStateRequest(var pruefungId: Int, var clientState: String);
+// data class ReportPruefungStudentStateResponse(var success: Boolean, var pruefungState: String, var message: String);
+
+export type ReportPruefungStudentStateRequest = {
+    pruefungId: number,
+    clientState: String,
+    running: Boolean
+}
+
+export type ReportPruefungStudentStateResponse = {
+    success: boolean,
+    pruefungState: string,
+    message: string
 }
