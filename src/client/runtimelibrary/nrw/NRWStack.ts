@@ -10,13 +10,13 @@ import {
   Parameterlist,
 } from "../../compiler/types/Types.js";
 import { RuntimeObject } from "../../interpreter/RuntimeObject.js";
-import { ListHelper } from "./List.js";
+import { NRWListHelper } from "./NRWList.js";
 
-export class StackClass extends Klass {
+export class NRWStackClass extends Klass {
 
   constructor(module: Module) {
 
-    super("Stack", module, "Generische Stack-Klasse");
+    super("NRWStack", module, "Generische Stack-Klasse");
 
     let objectType = module.typeStore.getType("Object");
 
@@ -37,12 +37,12 @@ export class StackClass extends Klass {
 
     this.addMethod(
       new Method(
-        "Stack",
+        "NRWStack",
         new Parameterlist([]),
         null,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh = new ListHelper(o, module.main.getInterpreter(), module);
+          let lh = new NRWListHelper(o, module.main.getInterpreter(), module);
           o.intrinsicData = lh;
         },
         false,
@@ -59,7 +59,7 @@ export class StackClass extends Klass {
         booleanPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData;
+          let lh: NRWListHelper = o.intrinsicData;
           return lh.isEmpty();
         },
         false,
@@ -76,7 +76,7 @@ export class StackClass extends Klass {
         typeA,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData;
+          let lh: NRWListHelper = o.intrinsicData;
           lh.toLast();
           return lh.getContent();
         },
@@ -94,7 +94,7 @@ export class StackClass extends Klass {
         voidPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData;
+          let lh: NRWListHelper = o.intrinsicData;
           lh.toLast();
           lh.remove();
         },
@@ -120,7 +120,7 @@ export class StackClass extends Klass {
         voidPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData;
+          let lh: NRWListHelper = o.intrinsicData;
           lh.append(parameters[1]);
         },
         false,

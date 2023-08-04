@@ -19,9 +19,9 @@ import {
 import { Interpreter } from "../../interpreter/Interpreter.js";
 import { RuntimeObject } from "../../interpreter/RuntimeObject.js";
 
-export class ListClass extends Klass {
+export class NRWListClass extends Klass {
   constructor(module: Module) {
-    super("List", module, "Generische Listenklasse");
+    super("NRWList", module, "Generische Listenklasse");
 
     let objectType = module.typeStore.getType("Object");
 
@@ -42,12 +42,12 @@ export class ListClass extends Klass {
 
     this.addMethod(
       new Method(
-        "List",
+        "NRWList",
         new Parameterlist([]),
         null,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
-          let lh = new ListHelper(o, module.main.getInterpreter(), module);
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
+          let lh = new NRWListHelper(o, module.main.getInterpreter(), module);
           o.intrinsicData = lh;
         },
         false,
@@ -63,7 +63,7 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           return o.intrinsicData.isEmpty();
         },
         false,
@@ -79,7 +79,7 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           return o.intrinsicData.hasAccess();
         },
         false,
@@ -95,7 +95,7 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           o.intrinsicData.next();
         },
         false,
@@ -111,7 +111,7 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           o.intrinsicData.toFirst();
         },
         false,
@@ -127,7 +127,7 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           o.intrinsicData.toLast();
         },
         false,
@@ -143,7 +143,7 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         typeA,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           return o.intrinsicData.getContent();
         },
         false,
@@ -167,7 +167,7 @@ export class ListClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           o.intrinsicData.setContent(parameters[1]);
         },
         false,
@@ -191,7 +191,7 @@ export class ListClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           o.intrinsicData.append(parameters[1]);
         },
         false,
@@ -215,7 +215,7 @@ export class ListClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           o.intrinsicData.insert(parameters[1]);
         },
         false,
@@ -239,7 +239,7 @@ export class ListClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           o.intrinsicData.concat(parameters[1]);
         },
         false,
@@ -255,7 +255,7 @@ export class ListClass extends Klass {
         new Parameterlist([]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<ListHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWListHelper> = parameters[0].value;
           o.intrinsicData.remove();
         },
         false,
@@ -267,7 +267,7 @@ export class ListClass extends Klass {
   }
 }
 
-export class ListHelper<T = any> {
+export class NRWListHelper<T = any> {
   valueArray: Value[] = [];
   objectArray: RuntimeObject<T>[] = []; // wird mitgeführt, um schnelle indexOf-Operationen zu ermöglichen
   current: number = -1;
@@ -339,7 +339,7 @@ export class ListHelper<T = any> {
   concat(v: Value) {
     if (v.type !== nullType) {
       let o: RuntimeObject = v.value;
-      let lh: ListHelper = o.intrinsicData["ListHelper"];
+      let lh: NRWListHelper = o.intrinsicData;
       this.valueArray = [...this.valueArray, ...lh.valueArray];
       this.objectArray = [...this.objectArray, ...lh.objectArray];
     }
@@ -350,167 +350,5 @@ export class ListHelper<T = any> {
       this.valueArray.splice(this.current, 1);
       this.objectArray.splice(this.current, 1);
     }
-  }
-
-  // copied form ListHelper
-  to_String(): any {
-    if (this.allElementsPrimitive()) {
-      return "[" + this.objectArray.map((o) => "" + o).join(", ") + "]";
-    }
-
-    let position: TextPosition = {
-      line: 1,
-      column: 1,
-      length: 1,
-    };
-
-    let statements: Statement[] = [
-      {
-        type: TokenType.noOp,
-        position: position,
-        stepFinished: false,
-      },
-      {
-        type: TokenType.pushConstant,
-        dataType: stringPrimitiveType,
-        value: "[",
-        position: position,
-        stepFinished: false,
-      },
-    ];
-
-    let toStringParameters = new Parameterlist([]);
-
-    for (let i = 0; i < this.valueArray.length; i++) {
-      let value = this.valueArray[i];
-      if (
-        value.value == null ||
-        value.type instanceof PrimitiveType ||
-        value.type instanceof StringPrimitiveType
-      ) {
-        statements.push({
-          type: TokenType.pushConstant,
-          dataType: stringPrimitiveType,
-          value:
-            value.value == null
-              ? "null"
-              : value.type.castTo(value, stringPrimitiveType).value,
-          position: position,
-          stepFinished: false,
-        });
-      } else {
-        statements.push({
-          type: TokenType.pushConstant,
-          dataType: value.type,
-          value: value.value,
-          stepFinished: false,
-          position: position,
-        });
-        statements.push({
-          type: TokenType.callMethod,
-          method: (<Klass | Interface | Enum>value.type).getMethod(
-            "toString",
-            toStringParameters
-          ),
-          isSuperCall: false,
-          stackframeBegin: -1,
-          stepFinished: false,
-          position: position,
-        });
-      }
-
-      statements.push({
-        type: TokenType.binaryOp,
-        operator: TokenType.plus,
-        leftType: stringPrimitiveType,
-        stepFinished: false,
-        position: position,
-      });
-
-      if (i < this.valueArray.length - 1) {
-        statements.push({
-          type: TokenType.pushConstant,
-          dataType: stringPrimitiveType,
-          value: ", ",
-          position: position,
-          stepFinished: false,
-        });
-        statements.push({
-          type: TokenType.binaryOp,
-          operator: TokenType.plus,
-          leftType: stringPrimitiveType,
-          stepFinished: false,
-          position: position,
-        });
-      }
-    }
-
-    statements.push({
-      type: TokenType.pushConstant,
-      dataType: stringPrimitiveType,
-      value: "]",
-      position: position,
-      stepFinished: false,
-    });
-
-    statements.push({
-      type: TokenType.binaryOp,
-      operator: TokenType.plus,
-      leftType: stringPrimitiveType,
-      stepFinished: false,
-      position: position,
-    });
-
-    // statements.push({
-    //     type: TokenType.binaryOp,
-    //     operator: TokenType.plus,
-    //     leftType: stringPrimitiveType,
-    //     stepFinished: false,
-    //     position: position
-    // });
-
-    statements.push({
-      type: TokenType.return,
-      copyReturnValueToStackframePos0: true,
-      leaveThisObjectOnStack: false,
-      stepFinished: false,
-      position: position,
-      methodWasInjected: true,
-    });
-
-    let program: Program = {
-      module: this.module,
-      statements: statements,
-      labelManager: null,
-    };
-
-    let method: Method = new Method(
-      "toString",
-      new Parameterlist([]),
-      stringPrimitiveType,
-      program,
-      false,
-      false
-    );
-    this.interpreter.runTimer(method, [], () => {}, true);
-
-    return "";
-  }
-
-  // is needed for the debug modus
-  allElementsPrimitive(): boolean {
-    for (let v of this.valueArray) {
-      if (
-        !(
-          v.type instanceof PrimitiveType ||
-          ["String", "_Double", "Integer", "Boolean", "Character"].indexOf(
-            v.type.identifier
-          ) >= 0
-        )
-      ) {
-        return false;
-      }
-    }
-    return true;
   }
 }

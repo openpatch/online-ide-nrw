@@ -9,10 +9,10 @@ import {
 import { Method, Parameterlist, Value } from "../../compiler/types/Types";
 import { RuntimeObject } from "../../interpreter/RuntimeObject";
 
-export class VertexClass extends Klass {
+export class NRWVertexClass extends Klass {
   constructor(module: Module) {
     super(
-      "Vertex",
+      "NRWVertex",
       module,
       "Die Klasse Vertex stellt einen einzelnen Knoten eines Graphen dar. Jedes Objekt dieser Klasse verfügt über eine im Graphen eindeutige ID als String und kann diese ID zurückliefern. Darüber hinaus kann eine Markierung gesetzt und abgefragt werden."
     );
@@ -23,7 +23,7 @@ export class VertexClass extends Klass {
 
     this.addMethod(
       new Method(
-        "Vertex",
+        "NRWVertex",
         new Parameterlist([
           {
             type: stringPrimitiveType,
@@ -35,8 +35,8 @@ export class VertexClass extends Klass {
         ]),
         null,
         (parameters) => {
-          let o: RuntimeObject<VertexHelper> = parameters[0].value;
-          o.intrinsicData = new VertexHelper(
+          let o: RuntimeObject<NRWVertexHelper> = parameters[0].value;
+          o.intrinsicData = new NRWVertexHelper(
             parameters[0],
             parameters[1].value
           );
@@ -54,7 +54,7 @@ export class VertexClass extends Klass {
         new Parameterlist([]),
         stringPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWVertexHelper> = parameters[0].value;
           return o.intrinsicData.getID();
         },
         false,
@@ -78,7 +78,7 @@ export class VertexClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWVertexHelper> = parameters[0].value;
           o.intrinsicData.setMark(parameters[1].value);
         },
         false,
@@ -94,7 +94,7 @@ export class VertexClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWVertexHelper> = parameters[0].value;
           return o.intrinsicData.isMarked();
         },
         false,
@@ -110,7 +110,7 @@ export class VertexClass extends Klass {
         new Parameterlist([]),
         stringPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<VertexHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWVertexHelper> = parameters[0].value;
           return o.intrinsicData.toString();
         },
         false,
@@ -122,7 +122,7 @@ export class VertexClass extends Klass {
   }
 }
 
-export class VertexHelper {
+export class NRWVertexHelper {
   private value: Value;
   private id: string;
   private mark: boolean;

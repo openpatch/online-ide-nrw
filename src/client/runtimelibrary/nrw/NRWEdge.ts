@@ -8,12 +8,12 @@ import {
 } from "../../compiler/types/PrimitiveTypes";
 import { Method, Parameterlist, Value } from "../../compiler/types/Types";
 import { RuntimeObject } from "../../interpreter/RuntimeObject";
-import { VertexHelper } from "./Vertex";
+import { NRWVertexHelper } from "./NRWVertex";
 
-export class EdgeClass extends Klass {
+export class NRWEdgeClass extends Klass {
   constructor(module: Module) {
     super(
-      "Edge",
+      "NRWEdge",
       module,
       "Ein neues Objekt vom Typ Edge wird erstellt. Die von diesem Objekt repräsentierte Kante verbindet die Knoten pVertex und pAnotherVertex mit der Gewichtung pWeight. Ihre Markierung hat den Wert false."
     );
@@ -24,17 +24,17 @@ export class EdgeClass extends Klass {
 
     this.addMethod(
       new Method(
-        "Edge",
+        "NRWEdge",
         new Parameterlist([
           {
-            type: module.typeStore.getType("Vertex"),
+            type: module.typeStore.getType("NRWVertex"),
             identifier: "pVertex",
             isFinal: true,
             usagePositions: null,
             declaration: null,
           },
           {
-            type: module.typeStore.getType("Vertex"),
+            type: module.typeStore.getType("NRWVertex"),
             identifier: "pAnotherVertex",
             isFinal: true,
             usagePositions: null,
@@ -50,10 +50,10 @@ export class EdgeClass extends Klass {
         ]),
         null,
         (parameters) => {
-          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
-          let v1: RuntimeObject<VertexHelper> = parameters[1].value;
-          let v2: RuntimeObject<VertexHelper> = parameters[2].value;
-          let eh: EdgeHelper = new EdgeHelper(
+          let o: RuntimeObject<NRWEdgeHelper> = parameters[0].value;
+          let v1: RuntimeObject<NRWVertexHelper> = parameters[1].value;
+          let v2: RuntimeObject<NRWVertexHelper> = parameters[2].value;
+          let eh = new NRWEdgeHelper(
             parameters[0],
             v1,
             v2,
@@ -75,7 +75,7 @@ export class EdgeClass extends Klass {
         new Parameterlist([]),
         doublePrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWEdgeHelper> = parameters[0].value;
           let eh = o.intrinsicData;
           return eh.getWeight();
         },
@@ -100,7 +100,7 @@ export class EdgeClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWEdgeHelper> = parameters[0].value;
           let eh = o.intrinsicData;
           eh.setWeight(parameters[1].value);
         },
@@ -125,7 +125,7 @@ export class EdgeClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWEdgeHelper> = parameters[0].value;
           let eh = o.intrinsicData;
           eh.setMark(parameters[1].value);
         },
@@ -142,7 +142,7 @@ export class EdgeClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWEdgeHelper> = parameters[0].value;
           let eh = o.intrinsicData;
           return eh.isMarked();
         },
@@ -157,9 +157,9 @@ export class EdgeClass extends Klass {
       new Method(
         "getVertices",
         new Parameterlist([]),
-        new ArrayType(module.typeStore.getType("Vertex")),
+        new ArrayType(module.typeStore.getType("NRWVertex")),
         (parameters) => {
-          let o: RuntimeObject<EdgeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWEdgeHelper> = parameters[0].value;
           let eh = o.intrinsicData;
           return eh
             .getVertices()
@@ -174,16 +174,16 @@ export class EdgeClass extends Klass {
   }
 }
 
-export class EdgeHelper {
+export class NRWEdgeHelper {
   private value: Value;
-  private vertices: RuntimeObject<VertexHelper>[];
+  private vertices: RuntimeObject<NRWVertexHelper>[];
   private mark: boolean;
   private weight: number;
 
   constructor(
     value: Value,
-    pVertex: RuntimeObject<VertexHelper>,
-    pAnotherVertex: RuntimeObject<VertexHelper>,
+    pVertex: RuntimeObject<NRWVertexHelper>,
+    pAnotherVertex: RuntimeObject<NRWVertexHelper>,
     pWeight: number
   ) {
     this.value = value;
@@ -198,7 +198,7 @@ export class EdgeHelper {
     return this.value;
   }
 
-  getVertices(): RuntimeObject<VertexHelper>[] {
+  getVertices(): RuntimeObject<NRWVertexHelper>[] {
     return this.vertices;
   }
 

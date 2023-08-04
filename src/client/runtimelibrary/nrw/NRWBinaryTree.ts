@@ -7,9 +7,9 @@ import {
 import { Method, Parameterlist } from "../../compiler/types/Types";
 import { RuntimeObject } from "../../interpreter/RuntimeObject";
 
-export class BinaryTreeClass extends Klass {
+export class NRWBinaryTreeClass extends Klass {
   constructor(module: Module) {
-    super("BinaryTree", module, "Generische Binärbaumklasse");
+    super("NRWBinaryTree", module, "Generische Binärbaumklasse");
 
     let objectType = module.typeStore.getType("Object");
 
@@ -30,12 +30,12 @@ export class BinaryTreeClass extends Klass {
 
     this.addMethod(
       new Method(
-        "BinaryTree",
+        "NRWBinaryTree",
         new Parameterlist([]),
         null,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let h = new BinaryTreeHelper();
+          let h = new NRWBinaryTreeHelper();
           o.intrinsicData = h;
         },
         false,
@@ -61,7 +61,7 @@ export class BinaryTreeClass extends Klass {
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
           let content: RuntimeObject = parameters[1].value;
-          let h = new BinaryTreeHelper(content);
+          let h = new NRWBinaryTreeHelper(content);
           o.intrinsicData = h;
         },
         false,
@@ -103,7 +103,7 @@ export class BinaryTreeClass extends Klass {
           let content: RuntimeObject = parameters[1].value;
           let left: RuntimeObject = parameters[2].value;
           let right: RuntimeObject = parameters[3].value;
-          let h = new BinaryTreeHelper(content, left, right);
+          let h = new NRWBinaryTreeHelper(content, left, right);
           o.intrinsicData = h;
         },
         false,
@@ -119,7 +119,7 @@ export class BinaryTreeClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<BinaryTreeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWBinaryTreeHelper> = parameters[0].value;
           let h = o.intrinsicData;
           return h.isEmpty();
         },
@@ -144,7 +144,7 @@ export class BinaryTreeClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<BinaryTreeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWBinaryTreeHelper> = parameters[0].value;
           let h = o.intrinsicData;
           let content: RuntimeObject = parameters[1].value;
           h.setContent(content);
@@ -162,7 +162,7 @@ export class BinaryTreeClass extends Klass {
         new Parameterlist([]),
         typeA,
         (parameters) => {
-          let o: RuntimeObject<BinaryTreeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWBinaryTreeHelper> = parameters[0].value;
           let h = o.intrinsicData;
           return h.getContent();
         },
@@ -187,9 +187,9 @@ export class BinaryTreeClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<BinaryTreeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWBinaryTreeHelper> = parameters[0].value;
           let h = o.intrinsicData;
-          let o2: RuntimeObject<BinaryTreeHelper> = parameters[1].value;
+          let o2: RuntimeObject<NRWBinaryTreeHelper> = parameters[1].value;
           h.setLeftTree(o2);
         },
         false,
@@ -205,7 +205,7 @@ export class BinaryTreeClass extends Klass {
         new Parameterlist([]),
         this,
         (parameters) => {
-          let o: RuntimeObject<BinaryTreeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWBinaryTreeHelper> = parameters[0].value;
           let h = o.intrinsicData;
           return h.getLeftTree();
         },
@@ -230,7 +230,7 @@ export class BinaryTreeClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<BinaryTreeHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWBinaryTreeHelper> = parameters[0].value;
           let h = o.intrinsicData;
           h.setRightTree(parameters[1].value.intrinsicData);
         },
@@ -247,8 +247,8 @@ export class BinaryTreeClass extends Klass {
         new Parameterlist([]),
         this,
         (parameters) => {
-          let o: RuntimeObject<BinaryTreeHelper> = parameters[0].value;
-          let h: BinaryTreeHelper = o.intrinsicData;
+          let o: RuntimeObject<NRWBinaryTreeHelper> = parameters[0].value;
+          let h: NRWBinaryTreeHelper = o.intrinsicData;
           return h.getRightTree();
         },
         false,
@@ -260,15 +260,15 @@ export class BinaryTreeClass extends Klass {
   }
 }
 
-export class BinaryTreeHelper<T = any> {
-  left: RuntimeObject<BinaryTreeHelper<T>> = null;
-  right: RuntimeObject<BinaryTreeHelper<T>> = null;
+export class NRWBinaryTreeHelper<T = any> {
+  left: RuntimeObject<NRWBinaryTreeHelper<T>> = null;
+  right: RuntimeObject<NRWBinaryTreeHelper<T>> = null;
   object: RuntimeObject = null;
 
   constructor(
-    object: RuntimeObject<BinaryTreeHelper<T>> | null = null,
-    left: RuntimeObject<BinaryTreeHelper<T>> | null = null,
-    right: RuntimeObject<BinaryTreeHelper<T>> | null = null
+    object: RuntimeObject<NRWBinaryTreeHelper<T>> | null = null,
+    left: RuntimeObject<NRWBinaryTreeHelper<T>> | null = null,
+    right: RuntimeObject<NRWBinaryTreeHelper<T>> | null = null
   ) {
     if (object != null) {
       this.object = object;
@@ -299,19 +299,19 @@ export class BinaryTreeHelper<T = any> {
     }
   }
 
-  setLeftTree(tree: RuntimeObject<BinaryTreeHelper<T>>) {
+  setLeftTree(tree: RuntimeObject<NRWBinaryTreeHelper<T>>) {
     if (!this.isEmpty() && tree) {
       this.left = tree;
     }
   }
 
-  setRightTree(tree: RuntimeObject<BinaryTreeHelper<T>>) {
+  setRightTree(tree: RuntimeObject<NRWBinaryTreeHelper<T>>) {
     if (!this.isEmpty() && tree) {
       this.right = tree;
     }
   }
 
-  getLeftTree(): RuntimeObject<BinaryTreeHelper<T>> {
+  getLeftTree(): RuntimeObject<NRWBinaryTreeHelper<T>> {
     if (!this.isEmpty()) {
       return this.left;
     } else {
@@ -319,7 +319,7 @@ export class BinaryTreeHelper<T = any> {
     }
   }
 
-  getRightTree(): RuntimeObject<BinaryTreeHelper<T>> {
+  getRightTree(): RuntimeObject<NRWBinaryTreeHelper<T>> {
     if (!this.isEmpty()) {
       return this.right;
     } else {

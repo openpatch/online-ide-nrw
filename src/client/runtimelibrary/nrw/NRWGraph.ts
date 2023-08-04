@@ -7,14 +7,14 @@ import {
 } from "../../compiler/types/PrimitiveTypes";
 import { Method, Parameterlist, Value } from "../../compiler/types/Types";
 import { RuntimeObject } from "../../interpreter/RuntimeObject";
-import { EdgeHelper } from "./Edge";
-import { ListHelper } from "./List";
-import { VertexHelper } from "./Vertex";
+import { NRWEdgeHelper } from "./NRWEdge";
+import { NRWListHelper } from "./NRWList";
+import { NRWVertexHelper } from "./NRWVertex";
 
-export class GraphClass extends Klass {
+export class NRWGraphClass extends Klass {
   constructor(module: Module) {
     super(
-      "Graph",
+      "NRWGraph",
       module,
       "Die Klasse Graph stellt einen ungerichteten, kantengewichteten Graphen dar. Es können Knoten- und Kantenobjekte hinzugefügt und entfernt, flache Kopien der Knoten- und Kantenlisten des Graphen angefragt und Markierungen von Knoten und Kanten gesetzt und überprüft werden. Des Weiteren kann eine Liste der Nachbarn eines bestimmten Knoten, eine Liste der inzidenten Kanten eines bestimmten Knoten und die Kante von einem bestimmten Knoten zu einem anderen Knoten angefragt werden. Abgesehen davon kann abgefragt werden, welches Knotenobjekt zu einer bestimmten ID gehört und ob der Graph leer ist."
     );
@@ -25,17 +25,17 @@ export class GraphClass extends Klass {
     typeA.identifier = "ContentType";
     typeA.isTypeVariable = true;
 
-    let vertexType = <Klass>module.typeStore.getType("Vertex");
-    let edgeType = <Klass>module.typeStore.getType("Edge");
+    let vertexType = <Klass>module.typeStore.getType("NRWVertex");
+    let edgeType = <Klass>module.typeStore.getType("NRWEdge");
 
-    let listVertexType = (<Klass>module.typeStore.getType("List")).clone();
+    let listVertexType = (<Klass>module.typeStore.getType("NRWList")).clone();
     listVertexType.typeVariables = [
       {
         ...listVertexType.typeVariables[0],
         type: vertexType,
       },
     ];
-    let listEdgeType = (<Klass>module.typeStore.getType("List")).clone();
+    let listEdgeType = (<Klass>module.typeStore.getType("NRWList")).clone();
     listEdgeType.typeVariables = [
       {
         ...listEdgeType.typeVariables[0],
@@ -47,26 +47,26 @@ export class GraphClass extends Klass {
 
     this.addMethod(
       new Method(
-        "Graph",
+        "NRWGraph",
         new Parameterlist([]),
         null,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
 
-          let vertices: RuntimeObject<ListHelper<VertexHelper>> =
+          let vertices: RuntimeObject<NRWListHelper<NRWVertexHelper>> =
             new RuntimeObject(listVertexType);
           (<Klass>vertices.class)
-            .getMethodBySignature("List()")
+            .getMethodBySignature("NRWList()")
             .invoke?.([{ type: listVertexType, value: vertices }]);
 
-          let edges: RuntimeObject<ListHelper<EdgeHelper>> = new RuntimeObject(
+          let edges: RuntimeObject<NRWListHelper<NRWEdgeHelper>> = new RuntimeObject(
             listEdgeType
           );
           (<Klass>edges.class)
-            .getMethodBySignature("List()")
+            .getMethodBySignature("NRWList()")
             .invoke?.([{ type: listEdgeType, value: edges }]);
 
-          let gh = new GraphHelper(parameters[0], vertices, edges);
+          let gh = new NRWGraphHelper(parameters[0], vertices, edges);
           o.intrinsicData = gh;
         },
         false,
@@ -90,7 +90,7 @@ export class GraphClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
           let gh = o.intrinsicData;
           gh.addVertex(parameters[1].value);
         },
@@ -115,8 +115,8 @@ export class GraphClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
-          let newEdge: RuntimeObject<EdgeHelper> = parameters[1].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
+          let newEdge: RuntimeObject<NRWEdgeHelper> = parameters[1].value;
           o.intrinsicData.addEdge(newEdge);
         },
         false,
@@ -140,8 +140,8 @@ export class GraphClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
-          let oldVertex: RuntimeObject<VertexHelper> = parameters[1].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
+          let oldVertex: RuntimeObject<NRWVertexHelper> = parameters[1].value;
           o.intrinsicData.removeVertex(oldVertex);
         },
         false,
@@ -165,8 +165,8 @@ export class GraphClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
-          let oldEdge: RuntimeObject<EdgeHelper> = parameters[1].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
+          let oldEdge: RuntimeObject<NRWEdgeHelper> = parameters[1].value;
           o.intrinsicData.removeEdge(oldEdge);
         },
         false,
@@ -206,7 +206,7 @@ export class GraphClass extends Klass {
         new Parameterlist([]),
         listVertexType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
           return o.intrinsicData.getVertices();
         },
         false,
@@ -230,8 +230,8 @@ export class GraphClass extends Klass {
         ]),
         listVertexType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
-          let vertex: RuntimeObject<VertexHelper> = parameters[1].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
+          let vertex: RuntimeObject<NRWVertexHelper> = parameters[1].value;
           return o.intrinsicData.getNeighbours(vertex);
         },
         false,
@@ -247,7 +247,7 @@ export class GraphClass extends Klass {
         new Parameterlist([]),
         listEdgeType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
           return o.intrinsicData.getEdges();
         },
         false,
@@ -271,8 +271,8 @@ export class GraphClass extends Klass {
         ]),
         listEdgeType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
-          let vertex: RuntimeObject<VertexHelper> = parameters[1].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
+          let vertex: RuntimeObject<NRWVertexHelper> = parameters[1].value;
           return o.intrinsicData.getEdges(vertex);
         },
         false,
@@ -303,9 +303,9 @@ export class GraphClass extends Klass {
         ]),
         listEdgeType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
-          let vertex1: RuntimeObject<VertexHelper> = parameters[1].value;
-          let vertex2: RuntimeObject<VertexHelper> = parameters[2].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
+          let vertex1: RuntimeObject<NRWVertexHelper> = parameters[1].value;
+          let vertex2: RuntimeObject<NRWVertexHelper> = parameters[2].value;
           return o.intrinsicData.getEdge(vertex1, vertex2);
         },
         false,
@@ -329,7 +329,7 @@ export class GraphClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
           o.intrinsicData.setAllVertexMarks(parameters[1].value);
         },
         false,
@@ -345,7 +345,7 @@ export class GraphClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
           return o.intrinsicData.allVerticesMarked();
         },
         false,
@@ -369,7 +369,7 @@ export class GraphClass extends Klass {
         ]),
         voidPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
           o.intrinsicData.setAllEdgeMarks(parameters[1].value);
         },
         false,
@@ -385,7 +385,7 @@ export class GraphClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
           return o.intrinsicData.allEdgesMarked();
         },
         false,
@@ -401,7 +401,7 @@ export class GraphClass extends Klass {
         new Parameterlist([]),
         booleanPrimitiveType,
         (parameters) => {
-          let o: RuntimeObject<GraphHelper> = parameters[0].value;
+          let o: RuntimeObject<NRWGraphHelper> = parameters[0].value;
           return o.intrinsicData.isEmpty();
         },
         false,
@@ -413,15 +413,15 @@ export class GraphClass extends Klass {
   }
 }
 
-export class GraphHelper {
+export class NRWGraphHelper {
   private value: Value;
-  private vertices: RuntimeObject<ListHelper<VertexHelper>>;
-  private edges: RuntimeObject<ListHelper<EdgeHelper>>;
+  private vertices: RuntimeObject<NRWListHelper<NRWVertexHelper>>;
+  private edges: RuntimeObject<NRWListHelper<NRWEdgeHelper>>;
 
   constructor(
     value: Value,
-    vertices: RuntimeObject<ListHelper<VertexHelper>>,
-    edges: RuntimeObject<ListHelper<EdgeHelper>>
+    vertices: RuntimeObject<NRWListHelper<NRWVertexHelper>>,
+    edges: RuntimeObject<NRWListHelper<NRWEdgeHelper>>
   ) {
     this.value = value;
     this.vertices = vertices;
@@ -432,8 +432,8 @@ export class GraphHelper {
     return this.value;
   }
 
-  getVertices(): RuntimeObject<ListHelper<VertexHelper>> {
-    const result = new RuntimeObject<ListHelper<VertexHelper>>(
+  getVertices(): RuntimeObject<NRWListHelper<NRWVertexHelper>> {
+    const result = new RuntimeObject<NRWListHelper<NRWVertexHelper>>(
       this.vertices.class
     );
     (<Klass>result.class)
@@ -451,12 +451,12 @@ export class GraphHelper {
   }
 
   getEdges(
-    pVertex?: RuntimeObject<VertexHelper>
-  ): RuntimeObject<ListHelper<EdgeHelper>> {
+    pVertex?: RuntimeObject<NRWVertexHelper>
+  ): RuntimeObject<NRWListHelper<NRWEdgeHelper>> {
     if (pVertex) {
       return this.getEdges2(pVertex);
     }
-    const result = new RuntimeObject<ListHelper<EdgeHelper>>(this.edges.class);
+    const result = new RuntimeObject<NRWListHelper<NRWEdgeHelper>>(this.edges.class);
     (<Klass>result.class)
       .getMethodBySignature("List()")
       .invoke?.([{ type: this.edges.class, value: result }]);
@@ -472,9 +472,9 @@ export class GraphHelper {
   }
 
   getEdges2(
-    pVertex: RuntimeObject<VertexHelper>
-  ): RuntimeObject<ListHelper<EdgeHelper>> {
-    const result = new RuntimeObject<ListHelper<EdgeHelper>>(this.edges.class);
+    pVertex: RuntimeObject<NRWVertexHelper>
+  ): RuntimeObject<NRWListHelper<NRWEdgeHelper>> {
+    const result = new RuntimeObject<NRWListHelper<NRWEdgeHelper>>(this.edges.class);
     (<Klass>result.class)
       .getMethodBySignature("List()")
       .invoke?.([{ type: this.edges.class, value: result }]);
@@ -497,8 +497,8 @@ export class GraphHelper {
     return result;
   }
 
-  getVertex(pID: string): RuntimeObject<VertexHelper> {
-    let result: RuntimeObject<VertexHelper> = null;
+  getVertex(pID: string): RuntimeObject<NRWVertexHelper> {
+    let result: RuntimeObject<NRWVertexHelper> = null;
     this.vertices.intrinsicData.toFirst();
     while (this.vertices.intrinsicData.hasAccess() && result == null) {
       if (
@@ -511,7 +511,7 @@ export class GraphHelper {
     return result;
   }
 
-  addVertex(pVertex: RuntimeObject<VertexHelper>) {
+  addVertex(pVertex: RuntimeObject<NRWVertexHelper>) {
     if (pVertex != null && pVertex.intrinsicData.getID() != null) {
       let freeID = true;
       this.vertices.intrinsicData.toFirst();
@@ -530,7 +530,7 @@ export class GraphHelper {
     }
   }
 
-  addEdge(pEdge: RuntimeObject<EdgeHelper>) {
+  addEdge(pEdge: RuntimeObject<NRWEdgeHelper>) {
     if (pEdge != null) {
       const vertexPair = pEdge.intrinsicData.getVertices();
       if (
@@ -547,7 +547,7 @@ export class GraphHelper {
     this.edges.intrinsicData.append(pEdge.intrinsicData.getValue());
   }
 
-  removeVertex(pVertex: RuntimeObject<VertexHelper>) {
+  removeVertex(pVertex: RuntimeObject<NRWVertexHelper>) {
     this.edges.intrinsicData.toFirst();
     while (this.edges.intrinsicData.hasAccess()) {
       let akt = this.edges.intrinsicData
@@ -572,7 +572,7 @@ export class GraphHelper {
     }
   }
 
-  removeEdge(pEdge: RuntimeObject<EdgeHelper>) {
+  removeEdge(pEdge: RuntimeObject<NRWEdgeHelper>) {
     this.edges.intrinsicData.toFirst();
     while (this.edges.intrinsicData.hasAccess()) {
       if (this.edges.intrinsicData.getContent() == pEdge) {
@@ -622,9 +622,9 @@ export class GraphHelper {
   }
 
   getNeighbours(
-    pVertex: RuntimeObject<VertexHelper>
-  ): RuntimeObject<ListHelper<VertexHelper>> {
-    let result = new RuntimeObject<ListHelper<VertexHelper>>(
+    pVertex: RuntimeObject<NRWVertexHelper>
+  ): RuntimeObject<NRWListHelper<NRWVertexHelper>> {
+    let result = new RuntimeObject<NRWListHelper<NRWVertexHelper>>(
       this.vertices.class
     );
     (<Klass>result.class)
@@ -646,10 +646,10 @@ export class GraphHelper {
   }
 
   getEdge(
-    pVertex: RuntimeObject<VertexHelper>,
-    pAnotherVertex: RuntimeObject<VertexHelper>
-  ): RuntimeObject<EdgeHelper> {
-    let result: RuntimeObject<EdgeHelper> = null;
+    pVertex: RuntimeObject<NRWVertexHelper>,
+    pAnotherVertex: RuntimeObject<NRWVertexHelper>
+  ): RuntimeObject<NRWEdgeHelper> {
+    let result: RuntimeObject<NRWEdgeHelper> = null;
 
     this.edges.intrinsicData.toFirst();
     while (this.edges.intrinsicData.hasAccess() && result == null) {

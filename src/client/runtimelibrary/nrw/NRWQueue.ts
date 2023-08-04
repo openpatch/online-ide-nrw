@@ -10,13 +10,13 @@ import {
   Parameterlist,
 } from "../../compiler/types/Types.js";
 import { RuntimeObject } from "../../interpreter/RuntimeObject.js";
-import { ListHelper } from "./List.js";
+import { NRWListHelper } from "./NRWList.js";
 
-export class QueueClass extends Klass {
+export class NRWQueueClass extends Klass {
 
   constructor(module: Module) {
 
-    super("Queue", module, "Generische Queue-Klasse");
+    super("NRWQueue", module, "Generische Queue-Klasse");
 
     let objectType = module.typeStore.getType("Object");
 
@@ -37,12 +37,12 @@ export class QueueClass extends Klass {
 
     this.addMethod(
       new Method(
-        "Queue",
+        "NRWQueue",
         new Parameterlist([]),
         null,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh = new ListHelper(o, module.main.getInterpreter(), module);
+          let lh = new NRWListHelper(o, module.main.getInterpreter(), module);
           o.intrinsicData = lh;
         },
         false,
@@ -59,7 +59,7 @@ export class QueueClass extends Klass {
         booleanPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData;
+          let lh: NRWListHelper = o.intrinsicData;
           return lh.isEmpty();
         },
         false,
@@ -76,7 +76,7 @@ export class QueueClass extends Klass {
         typeA,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData;
+          let lh: NRWListHelper = o.intrinsicData;
           lh.toFirst();
           console.log(lh.getContent());
           return lh.getContent();
@@ -95,7 +95,7 @@ export class QueueClass extends Klass {
         voidPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData;
+          let lh: NRWListHelper = o.intrinsicData;
           lh.toFirst();
           lh.remove();
         },
@@ -121,7 +121,7 @@ export class QueueClass extends Klass {
         voidPrimitiveType,
         (parameters) => {
           let o: RuntimeObject = parameters[0].value;
-          let lh: ListHelper = o.intrinsicData;
+          let lh: NRWListHelper = o.intrinsicData;
           lh.append(parameters[1]);
         },
         false,

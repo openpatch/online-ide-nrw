@@ -5,10 +5,10 @@ import {
   booleanPrimitiveType,
 } from "../../compiler/types/PrimitiveTypes.js";
 
-export class ComparableContentClass extends Interface {
+export class NRWComparableContentClass extends Interface {
   constructor(module: Module) {
     super(
-      "ComparableContent",
+      "NRWComparableContent",
       module,
       "Interface mit Methoden zum Vergleichen von Objekten."
     );
