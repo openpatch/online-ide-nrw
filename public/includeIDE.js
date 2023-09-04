@@ -1,4 +1,4 @@
-let base = "https://embed.learnj.de/include/";
+let base = "https://onlineide.openpatch.org/";
 
 // includeJs(base + "lib/pixijs/pixi.js");
 // includeCss(base + 'js.webpack/javaOnlineEmbedded.css');
