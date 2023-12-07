@@ -17,7 +17,7 @@ import { SpritesheetData } from "../../spritemanager/SpritesheetData.js";
 import { FileTypeManager } from './FileTypeManager.js';
 import { ajax, ajaxAsync } from '../../communication/AjaxHelper.js';
 import { TeacherExplorer } from './TeacherExplorer.js';
-import { DatabaseSSEListener } from '../../tools/database/DatabaseSSEListener.js';
+import { DatabaseNewLongPollingListener } from '../../tools/database/DatabaseNewLongPollingListener.js';
 
 
 export class ProjectExplorer {
@@ -97,12 +97,15 @@ export class ProjectExplorer {
             (module: Module, newName: string, ae: AccordionElement) => {
                 newName = newName.substr(0, 80);
                 let file = module.file;
+                
+                this.main.currentWorkspace.moduleStore.rename(file.name, newName);
 
                 file.name = newName;
                 file.saved = false;
                 let fileType = FileTypeManager.filenameToFileType(newName);
                 that.fileListPanel.setElementClass(ae, fileType.iconclass)
                 monaco.editor.setModelLanguage(module.model, fileType.language);
+
 
                 that.main.networkManager.sendUpdates();
                 return newName;
@@ -519,8 +522,7 @@ export class ProjectExplorer {
                                     if (error == null) {
                                         let networkManager = this.main.networkManager;
                                         let dt = networkManager.updateFrequencyInSeconds * networkManager.forcedUpdateEvery;
-                                        alert("Der Workspace " + workspace.name + " wurde an die Klasse " + klasse.name + " ausgeteilt. Er wird in maximal " +
-                                            dt + " s bei jedem Schüler ankommen.");
+                                        alert("Der Workspace " + workspace.name + " wurde an die Klasse " + klasse.name + " ausgeteilt. Er wird sofort in der Workspaceliste der Schüler/innen erscheinen.\n Falls das bei einer Schülerin/einem Schüler nicht klappt, bitten Sie sie/ihn, sich kurz aus- und wieder einzuloggen.");
                                     } else {
                                         alert(error);
                                     }
@@ -722,7 +724,7 @@ export class ProjectExplorer {
 
     setWorkspaceActive(w: Workspace, scrollIntoView: boolean = false) {
 
-        DatabaseSSEListener.closeSSE();
+        DatabaseNewLongPollingListener.close();
 
         this.workspaceListPanel.select(w, false, scrollIntoView);
 

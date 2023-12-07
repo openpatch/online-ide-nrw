@@ -3,9 +3,9 @@ import { Main } from "../Main.js";
 import { ClassData, UserData, Pruefung, PruefungCaptions } from "../../communication/Data.js";
 import { ajaxAsync, csrfToken } from "../../communication/AjaxHelper.js";
 import { Workspace } from "../../workspace/Workspace.js";
-import { GUIToggleButton } from "./controls/GUIToggleButton.js";
+import { GUIToggleButton } from "../../tools/components/GUIToggleButton.js";
 import jQuery from "jquery";
-import { SSEManager } from "../../communication/SSEManager.js";
+import { PushClientManager } from "../../communication/pushclient/PushClientManager.js";
 
 export class TeacherExplorer {
 
@@ -40,7 +40,7 @@ export class TeacherExplorer {
 
         this.renderClasses(this.classData);
 
-        SSEManager.subscribe("onPruefungChanged", async () => {
+        PushClientManager.subscribe("onPruefungChanged", async () => {
             if (this.classPanelMode == "tests") {
                 await this.fetchPruefungen()
                 this.renderPruefungen();
@@ -182,6 +182,8 @@ export class TeacherExplorer {
     renderStudents(userDataList: UserData[]) {
         this.studentPanel.clear();
 
+        this.studentPanel.setCaption(userDataList.length + " Schüler/innen");
+
         userDataList.sort((a, b) => {
             if (a.familienname > b.familienname) return -1;
             if (b.familienname > a.familienname) return 1;
@@ -208,6 +210,7 @@ export class TeacherExplorer {
 
     renderClasses(classDataList: ClassData[]) {
         this.studentPanel.clear();
+        this.studentPanel.setCaption("Schüler/innen");
         this.classPanel.clear();
 
         classDataList.sort((a, b) => {

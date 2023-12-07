@@ -1,7 +1,7 @@
-import { ajax, ajaxAsync, extractCsrfTokenFromGetRequest } from "../communication/AjaxHelper";
+import { ajax, ajaxAsync } from "../communication/AjaxHelper";
 import { BaseResponse, CRUDPruefungRequest, CRUDPruefungResponse, GetPruefungStudentStatesRequest, GetPruefungStudentStatesResponse, GetPruefungenForLehrkraftResponse, KlassData, Pruefung, PruefungCaptions, PruefungState, StudentPruefungStateInfo, UpdatePruefungSchuelerDataRequest, UserData, WorkspaceData, WorkspaceShortData } from "../communication/Data";
-import { SSEManager } from "../communication/SSEManager";
-import { GUIButton } from "../main/gui/controls/GUIButton";
+import { PushClientManager } from "../communication/pushclient/PushClientManager";
+import { GUIButton } from "../tools/components/GUIButton";
 import { makeDiv } from "../tools/HtmlTools";
 import { AdminMenuItem } from "./AdminMenuItem";
 import { NewPruefungPopup } from "./NewPruefungPopup";
@@ -109,7 +109,7 @@ export class Pruefungen extends AdminMenuItem {
 
         this.initTimer();
 
-        SSEManager.subscribe("onGradeChangedInMainWindow", (data: WorkspaceData) => {
+        PushClientManager.getInstance().subscribe("onGradeChangedInMainWindow", (data: WorkspaceData) => {
             let record: PSchuelerData = <any>this.studentTable.records.find((r: PSchuelerData) => r.id == data.owner_id);
             if (record == null) return;
             record.grade = data.grade;
@@ -124,7 +124,7 @@ export class Pruefungen extends AdminMenuItem {
         this.studentTable.destroy();
         this.timerActive = false;
         jQuery('.joe_pruefung_timerbar').remove();
-        SSEManager.unsubscribe("onGradeChangedInMainWindow");
+        PushClientManager.getInstance().unsubscribe("onGradeChangedInMainWindow");
     }
 
     checkPermission(user: UserData): boolean {
