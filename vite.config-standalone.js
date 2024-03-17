@@ -1,4 +1,3 @@
-
 import { resolve, join } from 'path'
 import { defineConfig } from 'vite'
 

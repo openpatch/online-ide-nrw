@@ -1,7 +1,7 @@
 {
   "name": "online-ide",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000 --host",
@@ -24,9 +24,8 @@
   },
   "dependencies": {
     "@types/chart.js": "^2.9.25",
-    "@types/w2ui": "^1.4.32",
     "jquery": "^3.6.3",
-    "pixi.js": "^7.2.0-beta",
-    "pixi3d": "^2.2.0"
+    "pixi.js": "7.2.0",
+    "pixi3d": "^2.4.0"
   }
 }

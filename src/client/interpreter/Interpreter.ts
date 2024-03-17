@@ -87,7 +87,7 @@ export class Interpreter {
 
     isFirstStatement: boolean = true;
 
-    showProgrampointerUptoStepsPerSecond = 15;
+    showProgrampointerUptoStepsPerSecond = 1000;
 
     worldHelper: WorldHelper;
     gngEreignisbehandlungHelper: GNGEreignisbehandlungHelper;
@@ -665,6 +665,7 @@ export class Interpreter {
         this.inputManager.hide();
         this.setState(InterpreterState.paused);
         this.timerStopped = true;
+        this.stepFinished = true;
 
         if (this.worldHelper != null) {
             this.worldHelper.spriteAnimations = [];
@@ -705,6 +706,7 @@ export class Interpreter {
 
     lastPrintedModule: Module = null;
     showProgramPointerAndVariables() {
+        this.debugger.blur(false);
         if (this.currentProgram == null) return;
         let node = this.currentProgram.statements[this.currentProgramPosition];
         if (node == null) return;
@@ -744,6 +746,7 @@ export class Interpreter {
                 // No static variable initializers
                 this.return;
             }
+            return;
         }
         this.stepOverNestingLevel = 10000;
         let oldStepOverNestingLevel = this.stepOverNestingLevel;
@@ -792,7 +795,8 @@ export class Interpreter {
 
             if (this.currentProgram == null) {
                 console.log("Interpeter.nextStep: Current program is null!");
-                this.return;
+                this.setState(InterpreterState.done);
+                return;
             }
 
             if (this.currentProgramPosition > this.currentProgram.statements.length - 1) {
@@ -1578,12 +1582,24 @@ export class Interpreter {
 
     runningStates: InterpreterState[] = [InterpreterState.paused, InterpreterState.running, InterpreterState.waitingForInput, InterpreterState.waitingForDB];
 
+    setStepsPerSecond(stepsPerSecond: number) {
+        this.stepsPerSecond = stepsPerSecond;
+        this.blurDebuggerIfNecessary();
+    }
+
+    blurDebuggerIfNecessary(){
+        this.debugger.blur(this.state == InterpreterState.running && this.stepsPerSecond > this.showProgrampointerUptoStepsPerSecond);
+    }
+
+
     setState(state: InterpreterState) {
 
         // console.log("Set state " + InterpreterState[state]);
-
+        
         let oldState = this.state;
         this.state = state;
+        
+        this.blurDebuggerIfNecessary();
 
         if (state == InterpreterState.error || state == InterpreterState.done) {
             this.closeAllWebsockets();
@@ -1892,5 +1908,6 @@ export class Interpreter {
         this.databaseConnectionHelpers.push(ch); 
     }
 
+    
 
 }

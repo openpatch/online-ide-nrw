@@ -1,12 +1,11 @@
 import { AccordionPanel, AccordionElement } from "./Accordion.js";
 import { Main } from "../Main.js";
-import { ClassData, UserData, CRUDUserRequest, CRUDClassRequest, GetWorkspacesResponse, GetWorkspacesRequest, Workspaces, Pruefung, PruefungCaptions } from "../../communication/Data.js";
-import { ajax, ajaxAsync } from "../../communication/AjaxHelper.js";
+import { ClassData, UserData, Pruefung, PruefungCaptions } from "../../communication/Data.js";
+import { ajaxAsync, csrfToken } from "../../communication/AjaxHelper.js";
 import { Workspace } from "../../workspace/Workspace.js";
-import { Helper } from "./Helper.js";
-import { GUIToggleButton } from "./controls/GUIToggleButton.js";
+import { GUIToggleButton } from "../../tools/components/GUIToggleButton.js";
 import jQuery from "jquery";
-import { PruefungDialog } from "./PruefungDialog.js";
+import { PushClientManager } from "../../communication/pushclient/PushClientManager.js";
 
 export class TeacherExplorer {
 
@@ -20,6 +19,8 @@ export class TeacherExplorer {
     pruefungen: Pruefung[] = [];
 
     classPanelMode: "classes" | "tests" = "classes";
+
+    currentPruefung: Pruefung = null;
 
 
     constructor(private main: Main, public classData: ClassData[]) {
@@ -39,6 +40,13 @@ export class TeacherExplorer {
 
         this.renderClasses(this.classData);
 
+        PushClientManager.subscribe("onPruefungChanged", async () => {
+            if (this.classPanelMode == "tests") {
+                await this.fetchPruefungen()
+                this.renderPruefungen();
+            }
+        });
+
     }
 
     initStudentPanel() {
@@ -49,10 +57,9 @@ export class TeacherExplorer {
 
         this.studentPanel.selectCallback = (ae: UserData) => {
             if (this.classPanelMode == "classes") {
-                this.main.projectExplorer.fetchAndRenderWorkspaces(ae);
+                this.main.projectExplorer.fetchAndRenderWorkspaces(ae, this);
             } else {
-                let selectedPruefung = this.classPanel.getSelectedElement().externalElement;
-                this.main.projectExplorer.fetchAndRenderWorkspaces(ae, this, selectedPruefung);
+                this.main.projectExplorer.fetchAndRenderWorkspaces(ae, this, this.currentPruefung);
             }
         }
 
@@ -61,7 +68,6 @@ export class TeacherExplorer {
     restoreOwnWorkspaces() {
         let main = this.main;
 
-        // main.monaco.setModel(monaco.editor.createModel("Keine Datei vorhanden.", "text"));
         main.getMonacoEditor().updateOptions({ readOnly: true });
 
         main.workspaceList = this.ownWorkspaces;
@@ -85,7 +91,6 @@ export class TeacherExplorer {
 
     initClassPanel() {
         let that = this;
-        let projectExplorer = this.main.projectExplorer;
 
         let $buttonContainer = jQuery('<div class="joe_teacherExplorerClassButtons"></div>');
         let toggleButtonClass = new GUIToggleButton("Klassen", $buttonContainer, true);
@@ -95,11 +100,11 @@ export class TeacherExplorer {
         this.classPanel = new AccordionPanel(this.main.projectExplorer.accordion,
             $buttonContainer, "2", "", "", "class", false, false, "class", false, []);
 
-        let $buttonNew = jQuery('<div class="jo_button jo_active img_add-test-dark" title="Neue Prüfung erstellen">');
-        this.classPanel.$captionElement.find('.jo_actions').append($buttonNew);
+        let $buttonPruefungAdministration = jQuery(`<a href='administration_mc.html?csrfToken=${csrfToken}' target='_blank'><div class="jo_button jo_active img_gear-dark" style="margin-right: 6px" title="Prüfungen verwalten..."></d>`);
+        this.classPanel.$captionElement.find('.jo_actions').append($buttonPruefungAdministration);
 
 
-        $buttonNew.attr("title", "Neue Prüfung erstellen").hide();
+        $buttonPruefungAdministration.attr("title", "Neue Prüfung erstellen").hide();
 
         this.classPanel.selectCallback = (ea) => {
 
@@ -120,7 +125,7 @@ export class TeacherExplorer {
         }
 
         toggleButtonTest.onChange(async (checked) => {
-            $buttonNew.toggle(200);
+            $buttonPruefungAdministration.toggle(200);
             that.classPanelMode = checked ? "tests" : "classes";
             that.main.networkManager.sendUpdates(() => {
                 if (checked) {
@@ -128,71 +133,47 @@ export class TeacherExplorer {
                         that.ownWorkspaces = that.main.workspaceList.slice();
                         that.currentOwnWorkspace = that.main.currentWorkspace;
                     }
-                    projectExplorer.workspaceListPanel.hide();
-                    projectExplorer.fileListPanel.clear();
-                    projectExplorer.fileListPanel.setCaption("---");
-                    if(this.pruefungen.length == 0){
-                        this.studentPanel.hide();
-                    }
                     this.renderPruefungen();
-                    this.main.getMonacoEditor().setModel(monaco.editor.createModel("Keine Datei vorhanden.", "text"));
-                    if(this.pruefungen.length > 0){
-                        this.classPanel.select(this.pruefungen[0], true, true);
+                    let firstPruefung = this.pruefungen.find(p => ["preparing", "running"].indexOf(p.state) < 0);
+                    if (firstPruefung != null) {
+                        this.classPanel.select(firstPruefung, true, true);
                     }
                 } else {
-                    this.main.projectExplorer.workspaceListPanel.show();
-                    this.studentPanel.show();
                     this.renderClasses(this.classData);
                     this.main.projectExplorer.onHomeButtonClicked();
                 }
             })
         })
 
-        $buttonNew.on('pointerdown', (e) => {
+        $buttonPruefungAdministration.on('pointerdown', (e) => {
             e.stopPropagation();
-        })
-
-        $buttonNew.on('pointerup', async (e) => {
-            e.stopPropagation();
-            try {
-                let newPruefung = await new PruefungDialog(this.main, this.classData).open();
-                let w = new Workspace("Prüfungsvorlage", this.main, this.main.user.id);
-                w.id = newPruefung.template_workspace_id;
-                w.pruefung_id = newPruefung.id;
-                this.main.workspaceList.push(w);
-                this.ownWorkspaces = this.main.workspaceList;
-                this.pruefungen.push(newPruefung);
-                this.addPruefungToClassPanel(newPruefung);
-                this.classPanel.select(newPruefung, true, true);
-            } catch (error) {
-
-            }
-
         })
 
     }
 
     onSelectPruefung(p: Pruefung) {
 
+        this.currentPruefung = p;
         let projectExplorer = this.main.projectExplorer;
-        projectExplorer.workspaceListPanel.clear();
-        projectExplorer.fileListPanel.clear();
-
-        this.main.projectExplorer.setExplorerColor(null);
-        this.main.projectExplorer.$homeAction.hide();
 
         if (p.state == "preparing" || p.state == "running") {
-            this.studentPanel.clear();
-            this.restoreOwnWorkspaces();
-            let workspace = this.main.workspaceList.find(w => w.id == p.template_workspace_id);
-            projectExplorer.setWorkspaceActive(workspace);
-            this.studentPanel.hide();
-        } else {
-            this.studentPanel.show();
+            alert('Die Prüfung befindet sich im Zustand "' + PruefungCaptions[p.state] + ", daher kann noch keine Schülerliste zur Korrektur angezeigt werden." +
+                "\nKlicken Sie auf das Zahnrad rechts oberhalb der Prüfungsliste, um zur Prüfungsverwaltung zu gelangen. Dort können Sie den Zustand der Prüfung ändern.");
+
+            projectExplorer.fileListPanel.clear();
             projectExplorer.fileListPanel.setCaption("---");
+            projectExplorer.workspaceListPanel.clear();
+            this.studentPanel.clear();
+            this.main.getMonacoEditor().setModel(monaco.editor.createModel("Keine Datei vorhanden.", "text"));
+
+
+        } else {
             let klass = this.classData.find(c => c.id == p.klasse_id);
             if (klass != null) {
                 this.renderStudents(klass.students);
+                if (klass.students.length > 0) {
+                    this.studentPanel.select(klass.students[0], true, true);
+                }
             }
         }
 
@@ -200,6 +181,8 @@ export class TeacherExplorer {
 
     renderStudents(userDataList: UserData[]) {
         this.studentPanel.clear();
+
+        this.studentPanel.setCaption(userDataList.length + " Schüler/innen");
 
         userDataList.sort((a, b) => {
             if (a.familienname > b.familienname) return -1;
@@ -217,7 +200,8 @@ export class TeacherExplorer {
                 externalElement: ud,
                 isFolder: false,
                 path: [],
-                readonly: false
+                readonly: false,
+                isPruefungFolder: false
             }
             this.studentPanel.addElement(ae, true);
         }
@@ -226,12 +210,11 @@ export class TeacherExplorer {
 
     renderClasses(classDataList: ClassData[]) {
         this.studentPanel.clear();
+        this.studentPanel.setCaption("Schüler/innen");
         this.classPanel.clear();
 
         classDataList.sort((a, b) => {
-            if (a.name > b.name) return 1;
-            if (b.name > a.name) return -1;
-            return 0;
+            return a.name.localeCompare(b.name);
         })
 
         for (let cd of classDataList) {
@@ -240,7 +223,8 @@ export class TeacherExplorer {
                 externalElement: cd,
                 isFolder: false,
                 path: [],
-                readonly: false
+                readonly: false,
+                isPruefungFolder: false
             }
             this.classPanel.addElement(ae, true);
         }
@@ -260,7 +244,8 @@ export class TeacherExplorer {
             isFolder: false,
             path: [],
             iconClass: "test",
-            readonly: false
+            readonly: false,
+            isPruefungFolder: false
         }
         this.classPanel.addElement(ae, true);
         this.updateClassNameAndState(p);
@@ -272,29 +257,15 @@ export class TeacherExplorer {
         if (ae != null) {
             let klasse = this.classData.find(c => c.id == p.klasse_id);
             if (klasse != null) {
-                let $text = jQuery('<span></span>');
-                $text.addClass('joe_pruefung_klasse');
+                let $text = ae.$htmlFirstLine.find(".joe_pruefung_klasse");
+                if ($text.length == 0) {
+                    $text = jQuery('<span class="joe_pruefung_klasse"></span>');
+                    $text.css('margin', '0 4px');
+                    ae.$htmlFirstLine.find(".jo_filename").append($text);
+                }
                 $text.text(`(${klasse.name})`);
-                $text.css('margin', '0 4px');
-                ae.$htmlFirstLine.find('.jo_textAfterName').empty().append($text);
             }
-            let $buttonDiv = ae.$htmlFirstLine?.find('.jo_additionalButtonRepository');
-            $buttonDiv.empty();
-            if ($buttonDiv != null) {
-                let $button = jQuery('<div class="img_gear-dark jo_button jo_active" title="Bearbeiten..." style="top: 2px; position: relative"></div>');
-                $buttonDiv.append($button);
-                $buttonDiv.on('pointerdown', async (e) => {
-                    e.stopPropagation();
-                    this.main.networkManager.sendUpdates(async () => {
-                        try {
-                            await new PruefungDialog(this.main, this.classData, p).open();
-                            this.updateClassNameAndState(p);
-                        } catch (ex) {
-    
-                        }
-                    })
-                })
-            }
+
             this.classPanel.setElementClass(ae, "test-" + p.state, PruefungCaptions[p.state]);
         }
     }

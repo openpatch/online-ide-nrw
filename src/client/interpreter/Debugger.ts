@@ -23,6 +23,8 @@ export class Debugger {
 
     watchPanel: AccordionPanel;
 
+    isBlurred: boolean = false;
+
 
     constructor(private main: MainBase, private $debuggerDiv: JQuery<HTMLElement>, private $projectexplorerDiv?: JQuery<HTMLElement>) {
 
@@ -74,6 +76,8 @@ export class Debugger {
 
     showData(currentProgram: Program, textPosition: TextPosition,
         stack: Value[], stackframe: number, heap: Heap) {
+
+        if(this.$debuggerDiv.is(':hidden')) return;
 
         if (currentProgram.module.file == null) return; // inside command line
 
@@ -278,5 +282,12 @@ export class Debugger {
 
     }
 
+    blur(doBlur: boolean){
+        // first check against field for performance reasons:
+        if(this.isBlurred != doBlur){
+            this.$debuggerDiv.find('.jo_projectexplorerdiv').css('filter', doBlur ? 'blur(2px)': 'none');
+            this.isBlurred = doBlur;
+        }
+    }
 
 }

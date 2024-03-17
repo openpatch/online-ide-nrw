@@ -131,7 +131,8 @@ export class WorkspaceImporter {
                                     iconClass: "workspace",
                                     isFolder: false,
                                     path: that.path,
-                                    readonly: false
+                                    readonly: false,
+                                    isPruefungFolder: false
                                 }, true);
 
                                 for(let mo of wse.modules){
@@ -146,7 +147,7 @@ export class WorkspaceImporter {
                                         version: 1,
                                         is_copy_of_id: null,
                                         repository_file_version: null,
-                                        identical_to_repository_version: null,
+                                        identical_to_repository_version: true,
                                     };
                                     let m = new Module(f, this.main);
                                     ws.moduleStore.putModule(m);

@@ -25,6 +25,11 @@ export class Workspace {
 
     spritesheetId: number;
 
+    grade?: string;
+    points?: string;
+    comment?: string;
+    attended_exam?: boolean;
+
     moduleStore: ModuleStore;
     panelElement: AccordionElement;
     currentlyOpenModule: Module;
@@ -43,6 +48,7 @@ export class Workspace {
     constructor(name: string, private main: MainBase, owner_id: number){
         this.name = name;
         this.owner_id = owner_id;
+        this.path = "";
         this.moduleStore = new ModuleStore(main, true, this.settings.libraries);
         this.evaluator = new Evaluator(this, main);
     }
@@ -74,9 +80,13 @@ export class Workspace {
             repository_id: this.repository_id,
             has_write_permission_to_repository: this.has_write_permission_to_repository,
             settings: JSON.stringify(this.settings),
-            spritesheetId: this.spritesheetId,
-            pruefungId: this.pruefung_id,
-            readonly: this.readonly
+            spritesheet_id: this.spritesheetId,
+            pruefung_id: this.pruefung_id,
+            readonly: this.readonly,
+            grade: this.grade,
+            points: this.points,
+            comment: this.comment,
+            attended_exam: this.attended_exam
         }
 
         if(withFiles){
@@ -149,10 +159,15 @@ export class Workspace {
         w.repository_id = wd.repository_id;
         w.has_write_permission_to_repository = wd.has_write_permission_to_repository;
         w.settings = settings;
-        w.pruefung_id = wd.pruefungId;
+        w.pruefung_id = wd.pruefung_id;
 
-        w.spritesheetId = wd.spritesheetId;
+        w.spritesheetId = wd.spritesheet_id;
         w.readonly = wd.readonly;
+
+        w.grade = wd.grade;
+        w.points = wd.points;
+        w.comment = wd.comment;
+        w.attended_exam = wd.attended_exam;
 
         if(w.settings.libraries == null){
             w.settings.libraries = [];

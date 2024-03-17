@@ -1,6 +1,6 @@
 import { ajaxAsync } from "../../communication/AjaxHelper.js";
 import { Pruefung, ReportPruefungStudentStateRequest, ReportPruefungStudentStateResponse, WorkspaceData } from "../../communication/Data.js";
-import { SSEManager } from "../../communication/SSEManager.js";
+import { PushClientManager } from "../../communication/pushclient/PushClientManager.js";
 import { Workspace } from "../../workspace/Workspace.js";
 import { Main } from "../Main.js";
 import jQuery from "jquery";
@@ -14,18 +14,18 @@ export class PruefungManagerForStudents {
     timer: any;
 
     constructor(private main: Main){
-        SSEManager.subscribe("startPruefung", (message: MessagePruefungStart ) => {
+        PushClientManager.subscribe("startPruefung", (message: MessagePruefungStart ) => {
             this.startPruefung(message.pruefung);
         })
-        SSEManager.subscribe("stopPruefung", (message: MessagePruefungStart ) => {
+        PushClientManager.subscribe("stopPruefung", (message: MessagePruefungStart ) => {
             this.stopPruefung(true);
         })
     }
 
     close(){
         if(this.pruefung != null){
-            SSEManager.unsubscribe("startPruefung");
-            SSEManager.unsubscribe("stopPruefung");
+            PushClientManager.unsubscribe("startPruefung");
+            PushClientManager.unsubscribe("stopPruefung");
             if(this.timer != null) clearInterval(this.timer);
             this.main.networkManager.sendUpdates(() => {
                 let projectExplorer = this.main.projectExplorer;
@@ -36,10 +36,12 @@ export class PruefungManagerForStudents {
         }
 
     }
-    
+
     startPruefung(pruefung: Pruefung) {
         
         if(this.pruefung != null) return;
+
+        this.pruefung = pruefung;
 
         this.main.networkManager.sendUpdates(() => {
             
@@ -56,9 +58,14 @@ export class PruefungManagerForStudents {
 
             projectExplorer.setWorkspaceActive(pruefungWorkspace);
             
-            this.pruefung = pruefung;
+            // this.pruefung = pruefung;
 
             jQuery('#pruefunglaeuft').css('display', 'block');
+            if(this.timer != null){
+                clearInterval(this.timer);
+                this.timer = null;
+            } 
+
             this.timer = setInterval(async () => {
                 let request: ReportPruefungStudentStateRequest = {pruefungId: this.pruefung.id, clientState: "", running: true}
                 let response: ReportPruefungStudentStateResponse = await ajaxAsync('/servlet/reportPruefungState',  request)
@@ -72,12 +79,21 @@ export class PruefungManagerForStudents {
     }
     
     async stopPruefung(renderWorkspaces: boolean){
-        this.pruefung = null;
+        // await this.main.networkManager.sendUpdatesAsync();  // is done by fetchAndRenderOwnWorkspaces later on
+
+        console.log("Stopping pruefung...");
+
         if(this.timer != null) clearInterval(this.timer);
         this.timer = null;
+
+        if(this.pruefung == null){
+            return;
+        } 
+
+        this.pruefung = null;
         
         this.main.projectExplorer.workspaceListPanel.show();
-
+        
         if(renderWorkspaces){
             await this.main.projectExplorer.fetchAndRenderOwnWorkspaces();
         }

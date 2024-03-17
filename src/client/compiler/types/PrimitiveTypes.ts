@@ -26,11 +26,11 @@ export class NullType extends Type {
     }
 
     compute(operation: TokenType, firstOperand: Value, secondOperand: Value) {
-        if(operation == TokenType.equal ) 
-        return firstOperand.value == secondOperand.value;
+        if (operation == TokenType.equal)
+            return firstOperand.value == secondOperand.value;
 
-        if(operation == TokenType.notEqual ) 
-        return firstOperand.value != secondOperand.value;
+        if (operation == TokenType.notEqual)
+            return firstOperand.value != secondOperand.value;
 
         return null;
     }
@@ -383,6 +383,7 @@ export class FloatPrimitiveType extends PrimitiveType {
             [TokenType.minus]: { "none": floatPrimitiveType, "short": floatPrimitiveType, "Short": floatPrimitiveType, "Integer": floatPrimitiveType, "int": floatPrimitiveType, "float": floatPrimitiveType, "Float": floatPrimitiveType, "double": doublePrimitiveType, "Double": doublePrimitiveType },
             [TokenType.multiplication]: { "short": floatPrimitiveType, "Short": floatPrimitiveType, "Integer": floatPrimitiveType, "int": floatPrimitiveType, "float": floatPrimitiveType, "Float": floatPrimitiveType, "double": doublePrimitiveType, "Double": doublePrimitiveType },
             [TokenType.division]: { "short": floatPrimitiveType, "Short": floatPrimitiveType, "Integer": floatPrimitiveType, "int": floatPrimitiveType, "float": floatPrimitiveType, "Float": floatPrimitiveType, "double": doublePrimitiveType, "Double": doublePrimitiveType },
+            [TokenType.modulo]: { "short": floatPrimitiveType, "Short": floatPrimitiveType, "Integer": floatPrimitiveType, "int": floatPrimitiveType, "float": floatPrimitiveType, "Float": floatPrimitiveType, "double": doublePrimitiveType, "Double": doublePrimitiveType },
             [TokenType.doublePlus]: { "none": floatPrimitiveType },
             [TokenType.doubleMinus]: { "none": floatPrimitiveType },
             [TokenType.negation]: { "none": floatPrimitiveType },
@@ -459,6 +460,9 @@ export class FloatPrimitiveType extends PrimitiveType {
             case TokenType.division:
                 return value / <number>(secondOperand.value);
 
+            case TokenType.modulo:
+                return value % <number>(secondOperand.value);
+
             case TokenType.doublePlus:
                 return value++;
 
@@ -513,6 +517,7 @@ export class DoublePrimitiveType extends PrimitiveType {
             [TokenType.minus]: { "none": doublePrimitiveType, "int": doublePrimitiveType, "short": doublePrimitiveType, "Short": doublePrimitiveType, "Integer": doublePrimitiveType, "float": doublePrimitiveType, "Float": doublePrimitiveType, "double": doublePrimitiveType, "Double": doublePrimitiveType },
             [TokenType.multiplication]: { "int": doublePrimitiveType, "short": doublePrimitiveType, "Short": doublePrimitiveType, "Integer": doublePrimitiveType, "float": doublePrimitiveType, "Float": doublePrimitiveType, "double": doublePrimitiveType, "Double": doublePrimitiveType },
             [TokenType.division]: { "int": doublePrimitiveType, "short": doublePrimitiveType, "Short": doublePrimitiveType, "Integer": doublePrimitiveType, "float": doublePrimitiveType, "Float": doublePrimitiveType, "double": doublePrimitiveType, "Double": doublePrimitiveType },
+            [TokenType.modulo]: { "int": doublePrimitiveType, "short": doublePrimitiveType, "Short": doublePrimitiveType, "Integer": doublePrimitiveType, "float": doublePrimitiveType, "Float": doublePrimitiveType, "double": doublePrimitiveType, "Double": doublePrimitiveType },
             [TokenType.doublePlus]: { "none": doublePrimitiveType },
             [TokenType.doubleMinus]: { "none": doublePrimitiveType },
             [TokenType.negation]: { "none": doublePrimitiveType },
@@ -588,6 +593,9 @@ export class DoublePrimitiveType extends PrimitiveType {
 
             case TokenType.division:
                 return value / <number>(secondOperand.value);
+
+            case TokenType.modulo:
+                return value % <number>(secondOperand.value);
 
             case TokenType.doublePlus:
                 return value++;
@@ -814,6 +822,8 @@ export class StringPrimitiveType extends Klass {
             (parameters) => { return <string>parameters[0].value == <string>(parameters[1].value); }, false, false, "Gibt genau dann **wahr** zurück, wenn die zwei Zeichenketten übereinstimmen (unter Berücksichtigung von Klein-/Großschreibung)."));
         this.addMethod(new Method("compareTo", new Parameterlist([{ identifier: "otherString", type: stringPrimitiveType, declaration: null, usagePositions: null, isFinal: false }]), intPrimitiveType,
             (parameters) => { return (<string>(parameters[0].value)).localeCompare(<string>(parameters[1].value), 'de', { caseFirst: 'upper' }); }, false, false, "Vergleicht den String mit dem übergebenen String. Gibt -1 zurück, falls ersterer im Alphabet vor letzterem steht, +1, falls umgekehrt und 0, falls beide Strings identisch sind."));
+        this.addMethod(new Method("concat", new Parameterlist([{ identifier: "otherString", type: stringPrimitiveType, declaration: null, usagePositions: null, isFinal: true }]), stringPrimitiveType,
+            (parameters) => { return (<string>(parameters[0].value)) + (<string>(parameters[1].value)); }, false, false, "Hängt die übergebene Zeichenkette an diese Zeichenkette an."));
         this.addMethod(new Method("compareToIgnoreCase", new Parameterlist([{ identifier: "otherString", type: stringPrimitiveType, declaration: null, usagePositions: null, isFinal: false }]), intPrimitiveType,
             (parameters) => { return (<string>(parameters[0].value)).localeCompare(<string>(parameters[1].value), 'de', { sensitivity: "accent" }); }, false, false, "Vergleicht den String mit dem übergebenen String. Gibt -1 zurück, falls ersterer im Alphabet vor letzterem steht, +1, falls umgekehrt und 0, falls beide Strings identisch sind."));
         this.addMethod(new Method("equalsIgnoreCase", new Parameterlist([{ identifier: "otherString", type: stringPrimitiveType, declaration: null, usagePositions: null, isFinal: false }]), booleanPrimitiveType,
@@ -921,6 +931,18 @@ export class StringPrimitiveType extends Klass {
             ))
         }
 
+        this.addMethod(new Method("toCharArray", new Parameterlist([ ]), new ArrayType(charPrimitiveType),
+            (parameters) => {
+                let strings = Array.from(<string>(parameters[0].value));
+                let values: Value[] = [];
+                for (let s of strings) {
+                    values.push({ type: charPrimitiveType, value: s });
+                }
+
+                return values;
+
+            }, false, false, "Wandelt die Zeichenkette in ein Array von Zeichen um."));
+
 
     }
 
@@ -993,7 +1015,8 @@ export class CharPrimitiveType extends PrimitiveType {
             [TokenType.lower]: { "char": booleanPrimitiveType, "int": booleanPrimitiveType },
             [TokenType.greater]: { "char": booleanPrimitiveType, "int": booleanPrimitiveType },
             [TokenType.lowerOrEqual]: { "char": booleanPrimitiveType, "int": booleanPrimitiveType },
-            [TokenType.greaterOrEqual]: { "char": booleanPrimitiveType, "int": booleanPrimitiveType }
+            [TokenType.greaterOrEqual]: { "char": booleanPrimitiveType, "int": booleanPrimitiveType },
+            [TokenType.modulo]: { "char": intPrimitiveType, "int": intPrimitiveType }
 
         };
 
@@ -1057,6 +1080,10 @@ export class CharPrimitiveType extends PrimitiveType {
             case TokenType.notEqual:
                 return value != <string>(secondOperand.value);
 
+            case TokenType.modulo:
+                let firstOperandAsInt = typeof value == "number" ? value : value.charCodeAt(0);
+                let secondOperandAsInt = typeof secondOperand.value == "number" ? secondOperand.value : secondOperand.value.charCodeAt(0);
+                return firstOperandAsInt % secondOperandAsInt;
         }
 
 

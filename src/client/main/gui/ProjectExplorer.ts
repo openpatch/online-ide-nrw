@@ -17,6 +17,7 @@ import { SpritesheetData } from "../../spritemanager/SpritesheetData.js";
 import { FileTypeManager } from './FileTypeManager.js';
 import { ajax, ajaxAsync } from '../../communication/AjaxHelper.js';
 import { TeacherExplorer } from './TeacherExplorer.js';
+import { DatabaseNewLongPollingListener } from '../../tools/database/DatabaseNewLongPollingListener.js';
 
 
 export class ProjectExplorer {
@@ -96,12 +97,15 @@ export class ProjectExplorer {
             (module: Module, newName: string, ae: AccordionElement) => {
                 newName = newName.substr(0, 80);
                 let file = module.file;
+                
+                this.main.currentWorkspace.moduleStore.rename(file.name, newName);
 
                 file.name = newName;
                 file.saved = false;
                 let fileType = FileTypeManager.filenameToFileType(newName);
                 that.fileListPanel.setElementClass(ae, fileType.iconclass)
                 monaco.editor.setModelLanguage(module.model, fileType.language);
+
 
                 that.main.networkManager.sendUpdates();
                 return newName;
@@ -177,7 +181,8 @@ export class ProjectExplorer {
                                     path: [],
                                     externalElement: m,
                                     iconClass: FileTypeManager.filenameToFileType(f.name).iconclass,
-                                    readonly: false
+                                    readonly: false,
+                                    isPruefungFolder: false
                                 }
                                 f.panelElement = element;
                                 that.fileListPanel.addElement(element, true);
@@ -339,6 +344,7 @@ export class ProjectExplorer {
                     if (error == null) {
                         that.main.removeWorkspace(workspace);
                         that.fileListPanel.clear();
+                        that.main.getMonacoEditor().setModel(null);
                         that.fileListPanel.setCaption('Bitte Workspace selektieren');
                         this.$synchronizeAction.hide();
                         successfulNetworkCommunicationCallback();
@@ -476,8 +482,9 @@ export class ProjectExplorer {
                                     externalElement: newWorkspace,
                                     iconClass: newWorkspace.repository_id == null ? 'workspace' : 'repository',
                                     isFolder: false,
-                                    path: path, 
-                                    readonly: false
+                                    path: path,
+                                    readonly: false,
+                                    isPruefungFolder: false
                                 };
 
                                 this.workspaceListPanel.addElement(newWorkspace.panelElement, true);
@@ -515,8 +522,7 @@ export class ProjectExplorer {
                                     if (error == null) {
                                         let networkManager = this.main.networkManager;
                                         let dt = networkManager.updateFrequencyInSeconds * networkManager.forcedUpdateEvery;
-                                        alert("Der Workspace " + workspace.name + " wurde an die Klasse " + klasse.name + " ausgeteilt. Er wird in maximal " +
-                                            dt + " s bei jedem Schüler ankommen.");
+                                        alert("Der Workspace " + workspace.name + " wurde an die Klasse " + klasse.name + " ausgeteilt. Er wird sofort in der Workspaceliste der Schüler/innen erscheinen.\n Falls das bei einer Schülerin/einem Schüler nicht klappt, bitten Sie sie/ihn, sich kurz aus- und wieder einzuloggen.");
                                     } else {
                                         alert(error);
                                     }
@@ -606,6 +612,9 @@ export class ProjectExplorer {
     }
 
     onHomeButtonClicked() {
+        this.workspaceListPanel.$buttonNew.show();
+        this.workspaceListPanel.$newFolderAction.show();                
+
         this.main.teacherExplorer.restoreOwnWorkspaces();
         this.main.networkManager.updateFrequencyInSeconds = this.main.networkManager.ownUpdateFrequencyInSeconds;
         this.$homeAction.hide();
@@ -642,7 +651,8 @@ export class ProjectExplorer {
                     isFolder: false,
                     path: [],
                     iconClass: FileTypeManager.filenameToFileType(m.file.name).iconclass,
-                    readonly: workspace.readonly
+                    readonly: workspace.readonly,
+                    isPruefungFolder: false
                 };
 
                 this.fileListPanel.addElement(m.file.panelElement, true);
@@ -668,7 +678,8 @@ export class ProjectExplorer {
                 iconClass: w.repository_id == null ? 'workspace' : 'repository',
                 isFolder: w.isFolder,
                 path: path,
-                readonly: w.readonly
+                readonly: w.readonly,
+                isPruefungFolder: false
             };
 
             this.workspaceListPanel.addElement(w.panelElement, false);
@@ -713,6 +724,8 @@ export class ProjectExplorer {
 
     setWorkspaceActive(w: Workspace, scrollIntoView: boolean = false) {
 
+        DatabaseNewLongPollingListener.close();
+
         this.workspaceListPanel.select(w, false, scrollIntoView);
 
         if (this.main.interpreter.state == InterpreterState.running) {
@@ -748,6 +761,8 @@ export class ProjectExplorer {
                 }
             });
 
+            this.main.bottomDiv.gradingManager?.setValues(w); 
+
         } else {
             this.setModuleActive(null);
         }
@@ -778,7 +793,7 @@ export class ProjectExplorer {
             this.main.getMonacoEditor().updateOptions({ readOnly: true });
             this.fileListPanel.setCaption('Keine Datei vorhanden');
         } else {
-            this.main.getMonacoEditor().updateOptions({ readOnly: this.main.currentWorkspace.readonly });
+            this.main.getMonacoEditor().updateOptions({ readOnly: this.main.currentWorkspace.readonly && !this.main.user.is_teacher });
             this.main.getMonacoEditor().setModel(m.model);
             if (this.main.getBottomDiv() != null) this.main.getBottomDiv().errorManager.showParenthesisWarning(m.bracketError);
 
@@ -900,14 +915,14 @@ export class ProjectExplorer {
         }
     }
 
-    setExplorerColor(color: string) {
+    setExplorerColor(color: string, usersFullName?: string) {
         let caption: string;
 
         if (color == null) {
             color = "transparent";
             caption = "Meine WORKSPACES";
         } else {
-            caption = "Schüler-WS";
+            caption = usersFullName;
         }
 
         this.fileListPanel.$listElement.parent().css('background-color', color);
@@ -926,6 +941,7 @@ export class ProjectExplorer {
 
     async fetchAndRenderWorkspaces(ae: UserData, teacherExplorer?: TeacherExplorer, pruefung: Pruefung = null) {
 
+
         await this.main.networkManager.sendUpdates();
 
         let request: GetWorkspacesRequest = {
@@ -940,27 +956,41 @@ export class ProjectExplorer {
             if (this.main.workspacesOwnerId == this.main.user.id && teacherExplorer != null) {
                 teacherExplorer.ownWorkspaces = this.main.workspaceList.slice();
                 teacherExplorer.currentOwnWorkspace = this.main.currentWorkspace;
-            } 
+            }
+
+            let isTeacherAndInPruefungMode = teacherExplorer?.classPanelMode == "tests";
+
+            if (ae.id != this.main.user.id) {
+                
+                if (isTeacherAndInPruefungMode) {
+                    response.workspaces.workspaces = response.workspaces.workspaces.filter(w => w.pruefung_id == pruefung.id);
+                }
+
+            }
+                        
+            this.main.workspacesOwnerId = ae.id;
+            this.main.restoreWorkspaces(response.workspaces, false);
             
-            if(ae.id != this.main.user.id)
-            {
-                this.main.projectExplorer.setExplorerColor("rgba(255, 0, 0, 0.2");
+            if (ae.id != this.main.user.id) {
+                this.main.projectExplorer.setExplorerColor("rgba(255, 0, 0, 0.2", ae.familienname + ", " + ae.rufname);
                 this.main.projectExplorer.$homeAction.show();
                 Helper.showHelper("homeButtonHelper", this.main);
-
-                this.main.bottomDiv.showHomeworkTab();
-                this.main.bottomDiv.homeworkManager.attachToWorkspaces(this.main.workspaceList);
                 this.main.networkManager.updateFrequencyInSeconds = this.main.networkManager.teacherUpdateFrequencyInSeconds;
                 this.main.networkManager.secondsTillNextUpdate = this.main.networkManager.teacherUpdateFrequencyInSeconds;
 
-                if(teacherExplorer != null && teacherExplorer.classPanelMode == "tests"){
-                    response.workspaces.workspaces = response.workspaces.workspaces.filter(w => w.pruefungId == pruefung.id);
+                if(!isTeacherAndInPruefungMode){
+                    this.main.bottomDiv.homeworkManager.attachToWorkspaces(this.main.workspaceList);
+                    this.main.bottomDiv.showHomeworkTab();
                 }
             }
 
-
-            this.main.restoreWorkspaces(response.workspaces, false);
-            this.main.workspacesOwnerId = ae.id;
+            if(pruefung != null){
+                this.workspaceListPanel.$buttonNew.hide();
+                this.workspaceListPanel.$newFolderAction.hide();
+            } else {
+                this.workspaceListPanel.$buttonNew.show();
+                this.workspaceListPanel.$newFolderAction.show();                
+            }
         }
 
 

@@ -1,28 +1,38 @@
 import { AdminMenuItem } from "./AdminMenuItem.js";
 import { SchoolsWithAdminsMI } from "./SchoolsWithAdminsMI.js";
-import { ajax, extractCsrfTokenFromGetRequest } from "../communication/AjaxHelper.js";
+import { ajax, csrfToken, extractCsrfTokenFromGetRequest } from "../communication/AjaxHelper.js";
 import { GetUserDataResponse, UserData, ClassData } from "../communication/Data.js";
 import { TeachersWithClassesMI } from "./TeachersWithClasses.js";
 import { ClassesWithStudentsMI } from "./ClassesWithStudentsMI.js";
 import { StudentBulkImportMI } from "./StudentBulkImortMI.js";
 import { ExportImportMI } from "./ExportImportMI.js";
+import { Pruefungen } from "./Pruefungen.js";
+
+import "/include/css/lib/w2ui-2.0.css"
+import "/include/css/icons.css";
+import "/include/css/administration.css";
+import { w2utils } from "../lib/w2ui-2.0.es6.js";
+
 
 export class Administration {
+
+    activeMenuItem: AdminMenuItem = null;
 
     menuItems: AdminMenuItem[] = [
         new SchoolsWithAdminsMI(this),
         new TeachersWithClassesMI(this),
         new ClassesWithStudentsMI(this),
         new StudentBulkImportMI(this),
-        new ExportImportMI(this)
+        new ExportImportMI(this),
+        new Pruefungen(this)
     ]
 
     userData: UserData;
     classes: ClassData[];
 
-    start() {
+    async start() {
 
-        extractCsrfTokenFromGetRequest();
+        await extractCsrfTokenFromGetRequest(true);
 
         let that = this;
         //@ts-ignore
@@ -48,6 +58,10 @@ export class Administration {
                 $button.on('click', () => {
 
                     jQuery('#main-heading').empty();
+                    
+                    if(this.activeMenuItem != null) this.activeMenuItem.destroy();
+                    this.activeMenuItem = mi;
+                    
                     jQuery('#main-table-left').empty().css("flex-grow", "1");
                     jQuery('#main-table-right').empty().css("flex-grow", "1");
                     this.removeGrid(jQuery('#main-table-left'));

@@ -19,6 +19,8 @@ export type AccordionElement = {
     isFolder: boolean;
     path: string[];
 
+    isPruefungFolder: boolean;
+
     readonly: boolean;
 }
 
@@ -44,7 +46,7 @@ export class AccordionPanel {
 
     static currentlyDraggedElement: AccordionElement;
     static currentlyDraggedElementKind: string;
-
+    
     newElementCallback: (ae: AccordionElement, callbackIfSuccessful: (externalElement: any) => void) => void;
     newFolderCallback: (ae: AccordionElement, callbackIfSuccessful: (externalElement: any) => void) => void;
     renameCallback: (externalElement: any, newName: string, ae: AccordionElement) => string;
@@ -61,7 +63,7 @@ export class AccordionPanel {
 
     constructor(private accordion: Accordion, caption: string | JQuery<HTMLElement>, private flexWeight: string,
         private newButtonClass: string, private buttonNewTitle: string,
-        private defaultIconClass: string, private withDeleteButton: boolean, private withFolders: boolean,
+        private defaultIconClass: string, public withDeleteButton: boolean, private withFolders: boolean,
         private kind: "workspace" | "file" | "class" | "student", private enableDrag: boolean, private acceptDropKinds: string[]) {
 
         this._$caption = (typeof caption == "string") ? jQuery(`<div class="jo_captiontext">${caption}</div>`) : caption;
@@ -197,6 +199,9 @@ export class AccordionPanel {
         path2.push(name2);
         name2 = "";
 
+        if(path1[0] == '_Prüfungen' && path2[0] != '_Prüfungen') return 1;
+        if(path2[0] == '_Prüfungen' && path1[0] != '_Prüfungen') return -1;
+
         let i = 0;
         while (i < path1.length && i < path2.length) {
             let cmp = path1[i].localeCompare(path2[i]);
@@ -257,7 +262,8 @@ export class AccordionPanel {
             name: name,
             isFolder: true,
             path: path,
-            readonly: false
+            readonly: false,
+            isPruefungFolder: false
         }
 
         let $element = this.renderElement(ae, true);
@@ -298,7 +304,8 @@ export class AccordionPanel {
                     name: "Neu",
                     isFolder: false,
                     path: path, 
-                    readonly: false
+                    readonly: false,
+                    isPruefungFolder: false
                 }
 
                 let insertIndex = this.getElementIndex("", path, false);
@@ -453,18 +460,29 @@ export class AccordionPanel {
             pathHtml += '<div class="jo_folderline"></div>';
         }
 
+        
         element.$htmlFirstLine = jQuery(`<div class="jo_file jo_${element.iconClass} ${expandedCollapsed}">
         <div class="jo_folderlines">${pathHtml}</div>
-           <div class="jo_fileimage"></div>
-           <div class="jo_filename">${escapeHtml(element.name)}</div>
-           <div class="jo_textAfterName"></div>
-           <div class="jo_additionalButtonHomework"></div>
-           <div class="jo_additionalButtonStart"></div>
-           <div class="jo_additionalButtonRepository"></div>
-           ${this.withDeleteButton && !element.readonly ? '<div class="jo_delete img_delete jo_button jo_active' + (false ? " jo_delete_always" : "") + '"></div>' : ""}
-           ${!jo_mouseDetected ? '<div class="jo_settings_button img_ellipsis-dark jo_button jo_active"></div>' : ""}
-           </div>`);
+        <div class="jo_fileimage"></div>
+        <div class="jo_filename"></div>
+        <div class="jo_textAfterName"></div>
+        <div class="jo_additionalButtonHomework"></div>
+        <div class="jo_additionalButtonStart"></div>
+        <div class="jo_additionalButtonRepository"></div>
+        ${this.withDeleteButton && !element.readonly ? '<div class="jo_delete img_delete jo_button jo_active' + (false ? " jo_delete_always" : "") + '"></div>' : ""}
+        ${!jo_mouseDetected ? '<div class="jo_settings_button img_ellipsis-dark jo_button jo_active"></div>' : ""}
+        </div>`);
 
+        let name = escapeHtml(element.name);
+        let $filenameElement = element.$htmlFirstLine.find('.jo_filename');
+        if(name == '_Prüfungen' && element.isFolder){
+            name = 'Prüfungen';
+            element.isPruefungFolder = true;
+            $filenameElement.addClass('joe_pruefungfolder');
+        }
+
+        $filenameElement.text(name);
+        
         if (!expanded && element.path.length > 0) {
             element.$htmlFirstLine.hide();
         }
@@ -798,6 +816,16 @@ export class AccordionPanel {
         return this.elements.filter((element) => element.path.join("/").startsWith(path));
     }
 
+
+    pathStartsWith(path: string[], pathStart: string[]){
+        if(path.length < pathStart.length) return false;
+        for(let i = 0; i < pathStart.length; i++){
+            if(path[i] != pathStart[i]) return false;
+        }
+
+        return true;
+    }
+
     renameElement(element: AccordionElement, callback?: () => void) {
         let that = this;
         let $div = element.$htmlFirstLine.find('.jo_filename');
@@ -806,8 +834,30 @@ export class AccordionPanel {
         this.dontSortElements = true;
         makeEditable($div, $div, (newText: string) => {
             if (element.externalElement != null) newText = that.renameCallback(element.externalElement, newText, element);
+            let oldName = element.name;
             element.name = newText;
             $div.html(element.name);
+
+            if(element.isFolder){
+                
+                let oldPath = element.path.slice().concat([oldName]);
+
+                let movedElements: AccordionElement[] = [];
+
+                for(let e of this.elements){
+
+                    if(this.pathStartsWith(e.path, oldPath)){
+                        e.path[oldPath.length - 1] = element.name;
+                        movedElements.push(e);
+                    }
+
+                }
+
+                if(movedElements.length > 0) this.moveCallback(movedElements);
+
+            }
+
+
             if (callback != null) callback();
             that.sortElements();
             $div[0].scrollIntoView();

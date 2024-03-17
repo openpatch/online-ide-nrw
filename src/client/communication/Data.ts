@@ -1,5 +1,10 @@
+import { Klass } from "../compiler/types/Class.js"
 import { SerializedClassDiagram } from "../main/gui/diagrams/classdiagram/ClassDiagram.js"
 
+export interface BaseResponse {
+    success: boolean;
+    message: string;
+}
 
 export type UserSettings = {
     helperHistory: {
@@ -63,10 +68,15 @@ export type WorkspaceData = {
     repository_id: number,    // id of repository-workspace
     has_write_permission_to_repository: boolean, // true if owner of this working copy has write permission to repository workspace
 
-    pruefungId: number,
+    pruefung_id: number,
     readonly: boolean,
 
-    spritesheetId: number
+    spritesheet_id: number,
+
+    grade?: string,
+    points?: string,
+    comment?: string,
+    attended_exam?: boolean
 }
 
 export type Workspaces = {
@@ -125,7 +135,8 @@ export type GetTeacherDataRequest = {
 
 export type GetTeacherDataResponse = {
     success: boolean,
-    teacherData?: TeacherData[]
+    teacherData?: TeacherData[],
+    classesWithoutTeacher: ClassData[]
 }
 
 export type ClassData = {
@@ -142,8 +153,9 @@ export type ClassData = {
 export type SchoolData = {
     id: number,
     name: string,
+    text?: string, // only form w2ui...
     kuerzel: string,
-    classes: ClassData[]
+    classes: ClassData[],
     usersWithoutClass: UserData[]
 }
 
@@ -167,7 +179,8 @@ export type LoginResponse = {
     classdata: ClassData[], // null if !is_teacher
     workspaces: Workspaces,
     isTestuser: boolean,
-    activePruefung: Pruefung
+    activePruefung: Pruefung,
+    sqlIdeForOnlineIdeClient: string
 }
 
 export type LogoutRequest = {
@@ -408,7 +421,7 @@ export type Repository = {
     secret_read?: string,
     secret_write?: string,
 
-    spritesheetId: number
+    spritesheet_id: number
 
 }
 
@@ -778,7 +791,7 @@ export type UploadSpriteResponse = {
 export type PruefungState = "preparing" | "running" | "correcting" | "opening";
 export var PruefungCaptions: {[index: string]: string} = {
     "preparing": "Vorbereitung",
-    "running": "Pr. läuft!",
+    "running": "Prüfung läuft",
     "correcting": "Korrektur",
     "opening": "Herausgabe"
 }
@@ -786,6 +799,7 @@ export var PruefungCaptions: {[index: string]: string} = {
 export type Pruefung = {
     id: number,
     name: string,
+    datum?: string,
     klasse_id: number,
     template_workspace_id: number,
     state: PruefungState;
@@ -835,4 +849,32 @@ export type ReportPruefungStudentStateResponse = {
     success: boolean,
     pruefungState: string,
     message: string
+}
+
+export type KlassData = {
+    id: number;
+    text: string;
+}
+
+export type WorkspaceShortData = {
+    id: number, 
+    path: string,
+    name: string, 
+    text?: string,
+    files: string[]
+}
+
+export type GetPruefungenForLehrkraftResponse = {
+    pruefungen: Pruefung[];
+    klassen: KlassData[];    
+    workspaces: WorkspaceShortData[];
+}
+
+export type UpdatePruefungSchuelerDataRequest = {
+    schuelerId: number;
+    pruefungId: number;
+    grade: string;
+    points: string;
+    attended_exam: boolean;
+    attributesToUpdate: string;
 }

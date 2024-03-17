@@ -42,7 +42,11 @@ export class CodeGenerator {
     breakNodeStack: JumpAlwaysStatement[][];
     continueNodeStack: JumpAlwaysStatement[][];
 
+    isAdhocCompilation: boolean;
+
     startAdhocCompilation(module: Module, moduleStore: ModuleStore, symbolTable: SymbolTable, heap: Heap): Error[] {
+
+        this.isAdhocCompilation = true;
 
         this.moduleStore = moduleStore;
         this.module = module;
@@ -69,6 +73,8 @@ export class CodeGenerator {
     }
 
     start(module: Module, moduleStore: ModuleStore) {
+
+        this.isAdhocCompilation = false;
 
         this.moduleStore = moduleStore;
         this.module = module;
@@ -151,8 +157,15 @@ export class CodeGenerator {
                 stepFinished: false,
                 method: mainMethod,
                 staticClass: staticClass
-            }, {
-                type: TokenType.closeStackframe,
+            }, 
+            // {
+            //     type: TokenType.closeStackframe,
+            //     position: mainMethod.usagePositions.get(this.module)[0]
+            // }
+            {
+                type: TokenType.programEnd,
+                stepFinished: true,
+                pauseAfterProgramEnd: true,
                 position: mainMethod.usagePositions.get(this.module)[0]
             }
             ], false);
@@ -413,12 +426,18 @@ export class CodeGenerator {
             if (methodNode != null && !methodNode.isAbstract && !methodNode.isStatic) {
                 this.compileMethod(methodNode);
                 let m: Method = methodNode.resolvedType;
-                if (m != null && m.annotation == "@Override") {
-                    if (klass.baseClass != null) {
-                        if (klass.baseClass.getMethodBySignature(m.signature) == null) {
-                            this.pushError("Die Methode " + m.signature + " ist mit @Override annotiert, überschreibt aber keine Methode gleicher Signatur einer Oberklasse.", methodNode.position, "warning");
+                if(m != null){
+                    if (m.annotation == "@Override") {
+                        if (klass.baseClass != null) {
+                            if (klass.baseClass.getMethodBySignature(m.signature) == null) {
+                                this.pushError("Die Methode " + m.signature + " ist mit @Override annotiert, überschreibt aber keine Methode gleicher Signatur einer Oberklasse.", methodNode.position, "warning");
+                            }
                         }
                     }
+                    if (m.identifier == classNode.identifier && !m.isConstructor) {
+                        this.pushError("Die Methode " + m.signature + " trägt den Bezeichner der Klasse, ist aber kein Konstruktor. Das ist ungünstig.", methodNode.position, "warning" );
+                    }
+
                 }
 
             }
@@ -1546,8 +1565,11 @@ export class CodeGenerator {
             if (this.heap[variable.identifier]) {
                 this.pushError("Die Variable " + node.identifier + " darf im selben Sichtbarkeitsbereich (Scope) nicht mehrmals definiert werden.", node.position);
             }
-
-            this.heap[variable.identifier] = variable;
+            
+            //Not needed in commandline-mode?
+            if(!this.isAdhocCompilation){
+                this.heap[variable.identifier] = variable;
+            }
             // only for code completion:
             this.currentSymbolTable.variableMap.set(node.identifier, variable);
 
@@ -1804,7 +1826,7 @@ export class CodeGenerator {
         let conditionType = this.processNode(node.condition);
 
         this.checkIfAssignmentInstedOfEqual(node.condition, conditionType?.type);
-        if (conditionType != null && conditionType.type != booleanPrimitiveType) {
+        if (conditionType != null && conditionType.type != booleanPrimitiveType && conditionType.type.identifier != "Boolean") {
             this.pushError("Der Wert des Terms in Klammern hinter 'if' muss den Datentyp boolean besitzen.", node.condition.position);
         }
 
@@ -1905,16 +1927,24 @@ export class CodeGenerator {
             collectionElementType = collectionType.arrayOfType;
             kind = "array";
         } else if (collectionType instanceof Klass && collectionType.getImplementedInterface("Iterable") != null) {
-            if (collectionType.module.isSystemModule) {
+
+            let ct1: Klass = collectionType;
+
+            // This is a bad hack to enable simplified for-loops with classes extending system collection classes
+            if(collectionType.baseClass != null && collectionType.baseClass.getImplementedInterface("Iterable") != null && collectionType.baseClass.module.isSystemModule){
+                ct1 = collectionType.baseClass;
+            }
+
+            if (ct1.module.isSystemModule) {
                 kind = "internalList";
             } else {
                 kind = "userDefinedIterable";
             }
-            let iterableInterface = collectionType.getImplementedInterface("Iterable");
-            if (collectionType.typeVariables.length == 0) {
+            let iterableInterface = ct1.getImplementedInterface("Iterable");
+            if (ct1.typeVariables.length == 0) {
                 collectionElementType = objectType;
             } else {
-                collectionElementType = collectionType.typeVariables[0].type;
+                collectionElementType = ct1.typeVariables[0].type;
             }
         } else if (collectionType instanceof Klass && collectionType.identifier == "Group") {
             kind = "group";
