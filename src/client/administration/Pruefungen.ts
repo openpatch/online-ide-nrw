@@ -1,6 +1,7 @@
 import { ajax, ajaxAsync } from "../communication/AjaxHelper";
 import { BaseResponse, CRUDPruefungRequest, CRUDPruefungResponse, GetPruefungStudentStatesRequest, GetPruefungStudentStatesResponse, GetPruefungenForLehrkraftResponse, KlassData, Pruefung, PruefungCaptions, PruefungState, StudentPruefungStateInfo, UpdatePruefungSchuelerDataRequest, UserData, WorkspaceData, WorkspaceShortData } from "../communication/Data";
 import { PushClientManager } from "../communication/pushclient/PushClientManager";
+import { w2event, w2grid, w2ui, w2utils } from "../lib/w2ui-2.0.es6";
 import { GUIButton } from "../tools/components/GUIButton";
 import { makeDiv } from "../tools/HtmlTools";
 import { AdminMenuItem } from "./AdminMenuItem";
@@ -47,8 +48,8 @@ export class Pruefungen extends AdminMenuItem {
     klassen: KlassData[];
     workspaces: WorkspaceShortData[];
 
-    pruefungTable: W2UI.W2Grid;
-    studentTable: W2UI.W2Grid;
+    pruefungTable: w2grid;
+    studentTable: w2grid;
 
     $stateDiv: JQuery<HTMLDivElement>;
     buttonBack: GUIButton;
@@ -197,7 +198,7 @@ export class Pruefungen extends AdminMenuItem {
         makeDiv("studentTable", null, null, null, $tableRight);
 
         w2ui["pruefungTable"]?.destroy();
-        this.pruefungTable = $('#pruefungTable').w2grid({
+        this.pruefungTable = new w2grid({
             name: "pruefungTable",
             header: 'Prüfungen',
             multiSelect: false,
@@ -209,19 +210,23 @@ export class Pruefungen extends AdminMenuItem {
             },
             recid: "id",
             columns: [
-                { field: 'id', caption: 'ID', size: '20px', sortable: true, hidden: true },
-                { field: 'name', caption: 'Bezeichnung', size: '15%', sortable: true, resizable: true, editable: { type: 'text' } },
+                { field: 'id', text: 'ID', size: '20px', sortable: true, hidden: true },
+                { field: 'name', text: 'Bezeichnung', size: '15%', sortable: true, resizable: true, editable: { type: 'text' } },
                 {
-                    field: 'klasse_id', caption: 'Klasse', size: '10%', sortable: true, resizable: true,
+                    field: 'klasse_id', text: 'Klasse', size: '10%', sortable: true, resizable: true,
                     editable: { type: 'list', items: this.klassen, showAll: true, openOnFocus: true, align: 'left' },
                     render: (e) => {
                         return this.klassen.find(c => c.id == e.klasse_id).text
                     }
                 },
-                {field: 'datum', caption: 'Datum', size: '15%', sortable: true, resizable: true, editable: {type: 'date'}, 
-                render: (e) => {return e.datum == null ? '----' : e.datum;} },
                 {
-                    field: 'template_workspace_id', caption: 'Vorlage-Workspace', size: '25%', sortable: true, resizable: true,
+                    field: 'datum', text: 'Datum', size: '15%', sortable: true, resizable: true, editable: { type: 'date' },
+                    render: (e) => {
+                        return e.datum == null ? '----' : e.datum;
+                    }
+                },
+                {
+                    field: 'template_workspace_id', text: 'Vorlage-Workspace', size: '25%', sortable: true, resizable: true,
                     editable: {
                         type: 'list', items: this.workspaces, showAll: true, openOnFocus: true, align: 'left',
                         style: 'width: 400px'
@@ -235,20 +240,24 @@ export class Pruefungen extends AdminMenuItem {
                     field: 'state', caption: 'Zustand', size: '15%', sortable: true, resizable: true,
                     render: (e, extra) => `<div class="jo_pruefung_state_cell">
                     <div class="jo_pruefung_state_cell_icon img_test-state-${e.state}"></div>
-                    <div class="jo_pruefung_state_text">${PruefungCaptions[e.state]}</div></div>` 
+                    <div class="jo_pruefung_state_text">${PruefungCaptions[e.state]}</div></div>`
                 }
             ],
             sortData: [{ field: 'klasse', direction: 'ASC' }, { field: 'name', direction: 'ASC' }],
             onSelect: (event) => {
-                event.done((e) => { this.onSelectPruefung(e.recid) })
+                setTimeout(() => {
+                    this.onSelectPruefung(event.detail.clicked.recid)
+                }, 100);
             },
             onDelete: (event) => {
                 let selected = this.pruefungTable.getSelection();
                 event.done((e) => { this.deletePruefung(<number>selected[0]) })
             },
-            onAdd: (event) => { this.addPruefung() },
+            onAdd: (event) => {  this.addPruefung() },
             onChange: (event) => { this.onUpdatePruefung(event) }
         })
+
+        this.pruefungTable.render($('#pruefungTable')[0]);
 
         //@ts-ignore
         let oldGetCellEditable: (ind: number, col_ind: number) => any = this.pruefungTable.getCellEditable;
@@ -266,7 +275,7 @@ export class Pruefungen extends AdminMenuItem {
 
         w2ui["studentTable"]?.destroy();
 
-        this.studentTable = $('#studentTable').w2grid({
+        this.studentTable = new w2grid({
             name: "studentTable",
             header: 'Schüler/innen',
             show: {
@@ -274,19 +283,19 @@ export class Pruefungen extends AdminMenuItem {
             },
             recid: "id",
             columns: [
-                { field: 'id', caption: 'ID', size: '20px', sortable: true, hidden: true },
-                { field: 'familienname', caption: 'Familienname', size: '20%', sortable: true, resizable: true },
-                { field: 'rufname', caption: 'Rufname', size: '20%', sortable: true, resizable: true },
-                { field: 'username', caption: 'Username', size: '20%', sortable: true, resizable: true },
-                { field: 'grade', caption: 'Note', size: '13%', sortable: true, resizable: true, editable: { type: "text" } },
-                { field: 'points', caption: 'Punkte', size: '13%', sortable: true, resizable: true, editable: { type: "text" } },
+                { field: 'id', text: 'ID', size: '20px', sortable: true, hidden: true },
+                { field: 'familienname', text: 'Familienname', size: '20%', sortable: true, resizable: true, sortMode: 'i18n' },
+                { field: 'rufname', text: 'Rufname', size: '20%', sortable: true, resizable: true, sortMode: 'i18n' },
+                { field: 'username', text: 'Username', size: '20%', sortable: true, resizable: true, sortMode: 'i18n' },
+                { field: 'grade', text: 'Note', size: '13%', sortable: true, resizable: true, editable: { type: "text" } },
+                { field: 'points', text: 'Punkte', size: '13%', sortable: true, resizable: true, editable: { type: "text" } },
                 {
-                    field: 'attended_exam', caption: 'anwesend', size: '13%', sortable: true, resizable: true,
+                    field: 'attended_exam', text: 'anwesend', size: '13%', sortable: true, resizable: true,
                     editable: { type: 'checkbox', style: 'text-align: center' }
                 },
                 // see https://w2ui.com/web/docs/2.0/w2grid.columns
                 {
-                    field: 'state', caption: 'Status', size: '20%', sortable: true, resizable: true,
+                    field: 'state', text: 'Status', size: '20%', sortable: true, resizable: true,
                     render: (record: PSchuelerData) => {
                         let state = record.state;
                         if (state == null) state = "---";
@@ -305,6 +314,8 @@ export class Pruefungen extends AdminMenuItem {
             onChange: (event) => { this.onUpdateStudent(event) }
 
         })
+
+        this.studentTable.render($('#studentTable')[0]);
 
         // Actions
         let $actionsDiv = jQuery('#pruefungActions');
@@ -331,7 +342,7 @@ export class Pruefungen extends AdminMenuItem {
 
         let lastTimeClicked: number = 0;
         this.buttonBack.onClick(async () => {
-            if(performance.now() - lastTimeClicked < 1000) return;
+            if (performance.now() - lastTimeClicked < 1000) return;
             lastTimeClicked = performance.now();
             if (this.selectedStateIndex == 1) {
                 alert("Die Prüfung läuft schon. Sie kann nicht mehr in den Zustand " + PruefungCaptions[0] + " versetzt werden.");
@@ -358,7 +369,7 @@ export class Pruefungen extends AdminMenuItem {
 
 
         this.buttonForward.onClick(async () => {
-            if(performance.now() - lastTimeClicked < 1000) return;
+            if (performance.now() - lastTimeClicked < 1000) return;
             lastTimeClicked = performance.now();
             if (this.selectedStateIndex == 0) {
                 if (!confirm("Soll die Prüfung wirklich sofort gestartet werden?")) return;
@@ -384,7 +395,7 @@ export class Pruefungen extends AdminMenuItem {
 
         makeDiv(null, 'jo_action_caption', "Aktionen für die ausgewählte Prüfung:", null, $actions2Div);
 
-        let $actionButtonsDiv = makeDiv(null, "joe_pruefung_actionButtonsDiv", "",  null, $actions2Div);
+        let $actionButtonsDiv = makeDiv(null, "joe_pruefung_actionButtonsDiv", "", null, $actions2Div);
 
 
         new GUIButton(" Alle Arbeiten drucken...", $actionButtonsDiv, "#5050ff", () => {
@@ -436,7 +447,8 @@ export class Pruefungen extends AdminMenuItem {
 
         let klasse = this.klassen.find(k => k.id == this.currentPruefung.klasse_id).text;
 
-        let datumText = this.currentPruefung.datum == null ? "" : ", am " + this.currentPruefung.datum;
+        let datumText = this.currentPruefung.datum == null ? "" : ", am " +
+            w2utils.formatDate(this.currentPruefung.datum, 'dd.mm.yyyy');
 
         for (let sd of p.pSchuelerDataList) {
             $printingDiv.append(`<h1>${sd.familienname}, ${sd.rufname} (Klasse ${klasse})</h1>`);
@@ -485,16 +497,16 @@ export class Pruefungen extends AdminMenuItem {
 
     onUpdatePruefung(event: any) {
 
-        let data: Pruefung = <Pruefung>this.pruefungTable.records[event.index];
+        let data: Pruefung = <Pruefung>this.pruefungTable.records[event.detail.index];
 
-        let field = this.pruefungTable.columns[event.column]["field"];
+        let field = this.pruefungTable.columns[event.detail.column]["field"];
 
         let oldData: any;
 
         switch (field) {
             case "name":
                 oldData = data[field];
-                data[field] = event.value_new;
+                data[field] = event.detail.value.new;
                 break;
             case "klasse_id":
                 if (data.state != this.states[0]) {
@@ -503,11 +515,11 @@ export class Pruefungen extends AdminMenuItem {
                     return;
                 }
                 oldData = data[field];
-                data[field] = event.value_new.id;
+                data[field] = event.detail.value.new.id;
                 break;
             case "datum":
                 oldData = data[field];
-                data[field] = event.value_new;
+                data[field] = event.detail.value.new;
                 break;
             case "template_workspace_id":
                 if (data.state != this.states[0]) {
@@ -516,7 +528,7 @@ export class Pruefungen extends AdminMenuItem {
                     return;
                 }
                 oldData = data[field];
-                data[field] = event.value_new.id;
+                data[field] = event.detail.value.new.id;
                 break;
         }
 
@@ -527,7 +539,7 @@ export class Pruefungen extends AdminMenuItem {
                 this.pruefungTable.refreshCell(data["recid"], field);
 
             } else {
-                data[field] = event.value_original;
+                data[field] = event.detail.value.original;
                 delete data["w2ui"]["changes"][field];
                 this.pruefungTable.refreshCell(data["recid"], field);
             }
@@ -539,12 +551,12 @@ export class Pruefungen extends AdminMenuItem {
 
     onUpdateStudent(event: any) {
 
-        let data = <PSchuelerData>this.studentTable.records[event.index];
+        let data = <PSchuelerData>this.studentTable.records[event.detail.index];
 
-        let field = this.studentTable.columns[event.column]["field"];
+        let field = this.studentTable.columns[event.detail.column]["field"];
 
         let oldData = data[field];
-        data[field] = event.value_new;
+        data[field] = event.detail.value.new;
 
         let request: UpdatePruefungSchuelerDataRequest = {
             pruefungId: this.currentPruefung.id,
@@ -557,12 +569,16 @@ export class Pruefungen extends AdminMenuItem {
 
         ajax('/updatePruefungSchuelerData', request, (response: BaseResponse) => {
             if (response.success == true) {
-                delete data["w2ui"]["changes"][field];
+                if (data["w2ui"] && data["w2ui"]["changes"]) {
+                    delete data["w2ui"]["changes"][field];
+                }
                 this.studentTable.refreshCell(data["recid"], field);
 
             } else {
-                data[field] = event.value_original;
-                delete data["w2ui"]["changes"][field];
+                data[field] = event.detail.value.original;
+                if (data["w2ui"] && data["w2ui"]["changes"]) {
+                    delete data["w2ui"]["changes"][field];
+                }
                 this.studentTable.refreshCell(data["recid"], field);
             }
         });
@@ -607,7 +623,7 @@ export class Pruefungen extends AdminMenuItem {
         this.studentTable.unlock();
         this.studentTable.clear();
         this.studentTable.add(p.pSchuelerDataList);
-        this.studentTable.refresh();
+        // this.studentTable.refresh();
 
         this.currentPruefung = <any>this.pruefungTable.records.find(p => p["recid"] == recId);
         this.selectedStateIndex = this.states.indexOf(this.currentPruefung.state);
