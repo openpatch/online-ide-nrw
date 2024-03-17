@@ -71,7 +71,7 @@ export class SpriteManager {
 
         let $buttonImport = <JQuery<HTMLInputElement>>jQuery('<input type="file" multiple="multiple" style="cursor:pointer; margin-top: 30px" class="jo_sm_writeonly"></input>');
         this.$importDropZone.append($buttonImport);
-        $buttonImport.on("change", (event) => { 
+        $buttonImport.on("change", (event) => {
             var files = event.target.files;
             that.fileList = files;
             $filesCountDiv.text(files.length != 1 ? (files.length + " Dateien sind ausgewählt.") : "Eine Datei ist ausgewählt.");
@@ -146,8 +146,8 @@ export class SpriteManager {
         })
 
         $buttonExportAll.on("click", () => { that.exportSpritesheet(); })
-        $buttonImportAll.on("change", (event) => { 
-            that.importSpritesheet(event.target.files); 
+        $buttonImportAll.on("change", (event) => {
+            that.importSpritesheet(event.target.files);
         })
 
         // Sprite list
@@ -260,18 +260,18 @@ export class SpriteManager {
         if(!this.readonly){
             let $seriesInput = this.makeStringParameterInput($inputDiv, "Serie: ", imageData.series ? imageData.series : "", "10em");
             $seriesInput.addClass('jo_sm_series');
-    
+
             let $indexInput = this.makeIntParameterInput($inputDiv, "Index: ", imageData.index ? imageData.index : 0);
             $indexInput.addClass('jo_sm_index');
-    
+
             $seriesInput.on("input", () => { imageData.series = <string>$seriesInput.val(); that.checkSeriesAndIndexesAndSetNextSpriteIndex(); })
-            $indexInput.on("input", () => { imageData.index = <number>$indexInput.val(); that.checkSeriesAndIndexesAndSetNextSpriteIndex(); })
+            $indexInput.on("input", () => { imageData.index = <number><unknown>$indexInput.val(); that.checkSeriesAndIndexesAndSetNextSpriteIndex(); })
         }
-        
+
         let $infoDiv = makeDiv(null, "jo_sm_infoDiv", "Breite: " + imageData.width + " px, Höhe: " + imageData.height + " px", null, $inputInfoDiv);
         let $errorSpan = jQuery('<span class="jo_sm_errorspan"></span>');
         $infoDiv.append($errorSpan);
-        
+
         if(!this.readonly){
             let $deleteButton = makeDiv(null, "img_delete jo_button jo_active", null, null, $line);
             $deleteButton.on('pointerdown', (ev) => {
@@ -319,7 +319,7 @@ export class SpriteManager {
         let that = this;
         if (!this.guiReady) {
             this.initGUI();
-        } 
+        }
 
         let workspace = this.main.getCurrentWorkspace();
         if(workspace == null){
@@ -368,7 +368,7 @@ export class SpriteManager {
         this.checkSeriesAndIndexesAndSetNextSpriteIndex();
 
     }
-    
+
     setNextSpriteIndex(){
         let maxIndex = -1;
         this.userSpritesheet.spriteDataList.forEach((sd) => {
@@ -393,7 +393,7 @@ export class SpriteManager {
 
         let headers: {[key: string]: string;} = { 'x-workspaceid': "" + that.main.getCurrentWorkspace().id, "x-filetype": deleteSpritesheet ? "delete" : "zip" };
         if(csrfToken != null) headers["x-token-pm"] = csrfToken;
-    
+
 
         jQuery.ajax({
             type: 'POST',
@@ -480,4 +480,4 @@ export class SpriteManager {
     }
 
 
-}   
+}
