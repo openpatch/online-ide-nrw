@@ -1,4 +1,4 @@
-let base = "https://onlineide.openpatch.org/";
+let base = "https://nrw.onlineide.openpatch.org/";
 
 // includeJs(base + "lib/pixijs/pixi.js");
 // includeCss(base + 'js.webpack/javaOnlineEmbedded.css');
@@ -43,8 +43,8 @@ includeJsAndCss(scripts, () => {
 });
 
 /**
- * 
- * @param {string} jo_doc 
+ *
+ * @param {string} jo_doc
  */
 function initScripts(jo_doc) {
 
