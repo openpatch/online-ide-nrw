@@ -21,7 +21,7 @@ export class NRWBinarySearchTreeClass extends Klass {
     typeA.identifier = "ContentType";
     typeA.isTypeVariable = true;
     typeA.implements.push(
-      <Interface>module.typeStore.getType("NRWComparableContent")
+      <Interface>module.typeStore.getType("NRWComparableContent"),
     );
 
     let tvA: TypeVariable = {
@@ -40,14 +40,17 @@ export class NRWBinarySearchTreeClass extends Klass {
         null,
         (parameters) => {
           let o: RuntimeObject<NRWBinarySearchTreeHelper> = parameters[0].value;
-          let h = new NRWBinarySearchTreeHelper(o, module.main.getInterpreter());
+          let h = new NRWBinarySearchTreeHelper(
+            o,
+            module.main.getInterpreter(),
+          );
           o.intrinsicData = h;
         },
         false,
         false,
         "Der Konstruktor erzeugt einen leeren Suchbaum.",
-        true
-      )
+        true,
+      ),
     );
 
     this.addMethod(
@@ -63,8 +66,8 @@ export class NRWBinarySearchTreeClass extends Klass {
         false,
         false,
         "Diese Anfrage liefert den Wahrheitswert true, wenn der Suchbaum leer ist, sonst liefert sie den Wert false.",
-        false
-      )
+        false,
+      ),
     );
 
     this.addMethod(
@@ -89,8 +92,8 @@ export class NRWBinarySearchTreeClass extends Klass {
         false,
         false,
         "Falls bereits ein Objekt in dem Suchbaum vorhanden ist, das gleichgroß ist wie pContent, passiert nichts. Andernfalls wird das Objekt pContent entsprechend der Ordnungsrelation in den Baum eingeordnet. Falls der Parameter null ist, ändert sich nichts.",
-        false
-      )
+        false,
+      ),
     );
 
     this.addMethod(
@@ -114,8 +117,8 @@ export class NRWBinarySearchTreeClass extends Klass {
         false,
         false,
         "Falls ein Objekt im binären Suchbaum enthalten ist, das gleichgroß ist wie pContent, liefert die Anfrage dieses, ansonsten wird null zurückgegeben. Falls der Parameter null ist, wird null zurückgegeben.",
-        false
-      )
+        false,
+      ),
     );
 
     this.addMethod(
@@ -139,10 +142,9 @@ export class NRWBinarySearchTreeClass extends Klass {
         false,
         false,
         "Falls ein Objekt im binären Suchbaum enthalten ist, das gleichgroß ist wie pContent, wird dieses entfernt. Falls der Parameter null ist, ändert sich nichts.",
-        false
-      )
+        false,
+      ),
     );
-
 
     this.addMethod(
       new Method(
@@ -157,8 +159,8 @@ export class NRWBinarySearchTreeClass extends Klass {
         false,
         false,
         "Diese Anfrage liefert das Inhaltsobjekt des Suchbaumes. Wenn der Suchbaum leer ist, wird null zurückgegeben.",
-        false
-      )
+        false,
+      ),
     );
 
     this.addMethod(
@@ -174,8 +176,8 @@ export class NRWBinarySearchTreeClass extends Klass {
         false,
         false,
         "Diese Anfrage liefert den linken Teilbaum des binären Suchbaumes. Der binäre Suchbaum ändert sich nicht. Wenn er leer ist, wird null zurückgegeben.",
-        false
-      )
+        false,
+      ),
     );
 
     this.addMethod(
@@ -191,8 +193,8 @@ export class NRWBinarySearchTreeClass extends Klass {
         false,
         false,
         "Diese Anfrage liefert den rechten Teilbaum des Suchbaumes. Der Suchbaum ändert sich nicht. Wenn er leer ist, wird null zurückgegeben.",
-        false
-      )
+        false,
+      ),
     );
   }
 }
@@ -206,22 +208,21 @@ class NodeHelper<T> {
   public constructor(
     bstO: RuntimeObject,
     pContent: RuntimeObject<T>,
-    interpreter: Interpreter
+    interpreter: Interpreter,
   ) {
     this.content = pContent;
 
-    const bstLeft = new RuntimeObject<NRWBinarySearchTreeHelper>(
-      bstO.class
-    );
+    console.log("new node");
+    const bstLeft = new RuntimeObject<NRWBinarySearchTreeHelper>(bstO.class);
     (<Klass>bstLeft.class)
-      .getMethodBySignature("BinarySearchTree()")
+      .getMethodBySignature("NRWBinarySearchTree()")
       .invoke?.([{ type: bstO.class, value: bstLeft }]);
-    const bstRight = new RuntimeObject<NRWBinarySearchTreeHelper>(
-      bstO.class
-    );
+    console.log("left");
+    const bstRight = new RuntimeObject<NRWBinarySearchTreeHelper>(bstO.class);
     (<Klass>bstRight.class)
-      .getMethodBySignature("BinarySearchTree()")
+      .getMethodBySignature("NRWBinarySearchTree()")
       .invoke?.([{ type: bstO.class, value: bstRight }]);
+    console.log("right");
     this.left = bstLeft;
     this.right = bstRight;
     this.interpreter = interpreter;
@@ -229,7 +230,7 @@ class NodeHelper<T> {
 
   execute(
     method: Method,
-    parameters: Value[]
+    parameters: Value[],
   ): { error: string; value: Value } {
     if (method.invoke) {
       return {
@@ -239,14 +240,14 @@ class NodeHelper<T> {
     } else {
       return this.interpreter.executeImmediatelyInNewStackframe(
         method.program,
-        parameters
+        parameters,
       );
     }
   }
 
   isLess(o: RuntimeObject): boolean {
     const method: Method = (<Klass>this.content.class).getMethodBySignature(
-      `isLess(${o.class.identifier})`
+      `isLess(${o.class.identifier})`,
     );
     const result = this.execute(method, [
       { type: this.content.class, value: this.content },
@@ -254,7 +255,7 @@ class NodeHelper<T> {
     ]);
     if (result.error != null) {
       this.interpreter.throwException(
-        "Fehler beim Ausführen der isLess-Methode"
+        "Fehler beim Ausführen der isLess-Methode",
       );
       return false;
     }
@@ -264,7 +265,7 @@ class NodeHelper<T> {
 
   isGreater(o: RuntimeObject): boolean {
     const method: Method = (<Klass>this.content.class).getMethodBySignature(
-      `isGreater(${o.class.identifier})`
+      `isGreater(${o.class.identifier})`,
     );
     const result = this.execute(method, [
       { type: this.content.class, value: this.content },
@@ -272,7 +273,7 @@ class NodeHelper<T> {
     ]);
     if (result.error != null) {
       this.interpreter.throwException(
-        "Fehler beim Ausführen der isGreater-Methode"
+        "Fehler beim Ausführen der isGreater-Methode",
       );
       return false;
     }
@@ -282,7 +283,7 @@ class NodeHelper<T> {
 
   isEqual(o: RuntimeObject): boolean {
     const method: Method = (<Klass>this.content.class).getMethodBySignature(
-      `isEqual(${o.class.identifier})`
+      `isEqual(${o.class.identifier})`,
     );
     const result = this.execute(method, [
       { type: this.content.class, value: this.content },
@@ -290,7 +291,7 @@ class NodeHelper<T> {
     ]);
     if (result.error != null) {
       this.interpreter.throwException(
-        "Fehler beim Ausführen der isEqual-Methode"
+        "Fehler beim Ausführen der isEqual-Methode",
       );
       return false;
     }
