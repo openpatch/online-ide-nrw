@@ -394,7 +394,7 @@ export class NRWBinarySearchTreeHelper<T = any> extends NRWBinaryTreeHelper<T> {
       } else if (this.node.isGreater(pContent)) {
         return this.getLeftTree().intrinsicData.search(pContent);
       } else if (this.node.isEqual(pContent)) {
-        return pContent;
+        return this.node.content;
       }
     }
     return null;
