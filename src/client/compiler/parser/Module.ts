@@ -960,9 +960,9 @@ export class BaseModule extends Module {
 
 
         this.typeStore.addType(new PrintStreamClass(this));
-        // this.typeStore.addType(new KeyListener(this));
+        this.typeStore.addType(new KeyListener(this));
         this.typeStore.addType(new SystemClass(this));
-        // this.typeStore.addType(new SystemToolsClass(this));
+        this.typeStore.addType(new SystemToolsClass(this));
         this.typeStore.addType(new DayOfWeekEnum(this));
         this.typeStore.addType(new MonthEnum(this));
         this.typeStore.addType(new LocalDateTimeClass(this));
